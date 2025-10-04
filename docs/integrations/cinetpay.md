@@ -39,7 +39,7 @@
 
 Before starting, ensure you have:
 - **Python 3.7+** installed on your system
-- A **CinetPay merchant account** (sign up at [CinetPay Registration](https://app-new.cinetpay.com/register))
+- A **CinetPay merchant account** (sign up at [CinetPay Registration](https://app-new.cinetpay.com))
 - Your **API credentials** from CinetPay dashboard
 - A **text editor** or IDE (VS Code, PyCharm, etc.)
 
@@ -252,7 +252,7 @@ Once testing is complete:
 ### Getting Your CinetPay Credentials
 
 **Step 1: Create CinetPay Account**
-1. Visit [CinetPay Merchant Registration](https://app-new.cinetpay.com/register) to create your account
+1. Visit [CinetPay Merchant Registration](https://app-new.cinetpay.com) to create your account
 2. Choose "Merchant Account" for business use
 3. Complete KYC verification process
 4. Wait for account approval (usually 24-48 hours)
