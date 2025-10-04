@@ -1,6 +1,8 @@
-# CinetPay Integration Guide
+
 
 <div align="center">
+
+<h1>CinetPay Integration Guide</h1>
   
 ![CinetPay Integration](https://img.shields.io/badge/CinetPay-Integration-blue?style=for-the-badge&logo=paypal)
 ![EasySwitch](https://img.shields.io/badge/EasySwitch-SDK-green?style=for-the-badge)
@@ -10,7 +12,7 @@
 
 *Streamline your payment processing with CinetPay through the EasySwitch SDK*
 
-[![Documentation](https://img.shields.io/badge/docs-complete-brightgreen)](.)
+[![Documentation](https://img.shields.io/badge/docs-complete-brightgreen)](../api-reference/base-adapter.md)
 [![Python](https://img.shields.io/badge/python-3.7+-blue)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -33,75 +35,449 @@
 
 ## Quick Start
 
-### Installation and Basic Setup
+### Step 1: Prerequisites
+
+Before starting, ensure you have:
+- **Python 3.7+** installed on your system
+- A **CinetPay merchant account** (sign up at [CinetPay.com](https://cinetpay.com))
+- Your **API credentials** from CinetPay dashboard
+- A **text editor** or IDE (VS Code, PyCharm, etc.)
+
+### Step 2: Installation
+
+Install EasySwitch using pip:
+
+```bash
+# Install EasySwitch SDK
+pip install easyswitch
+
+```
+
+### Step 3: Get Your CinetPay Credentials
+
+1. **Login to CinetPay Dashboard**
+   - Go to [CinetPay Dashboard](https://dashboard.cinetpay.com)
+   - Navigate to **Settings** → **API Keys**
+
+2. **Copy Your Credentials**
+   ```
+   API Key: cp_test_xxxxxxxxx (for sandbox) or cp_live_xxxxxxxxx (for production)
+   Site ID: 123456
+   Secret Key: your_secret_key_here
+   ```
+
+3. **Create Webhook Endpoint**
+   - In dashboard, go to **Webhooks**
+   - Add your webhook URL: `https://yoursite.com/webhook/cinetpay`
+
+### Step 4: Environment Setup
+
+Create a `.env` file in your project root:
+
+```bash
+# .env file
+CINETPAY_API_KEY=cp_test_your_api_key_here
+CINETPAY_SITE_ID=your_site_id
+CINETPAY_SECRET=your_secret_key
+CINETPAY_CALLBACK_URL=https://yoursite.com/webhook/cinetpay
+CINETPAY_ENVIRONMENT=sandbox
+```
+
+**Important**: Never commit your `.env` file to version control!
+
+### Step 5: Your First Payment (Complete Example)
+
+Create a file called `payment_example.py`:
 
 ```python
-from easyswitch import EasySwitch, Provider, TransactionDetail, CustomerInfo, Currency
-
-client = EasySwitch.from_env()
-
-transaction = TransactionDetail(
-    transaction_id="TXN-001",
-    provider=Provider.CINETPAY,
-    amount=5000.0,
-    currency=Currency.XOF,
-    customer=CustomerInfo(
-        first_name="John",
-        last_name="Doe",
-        phone_number="+22570123456",
-        email="john@example.com"
-    ),
-    reason="Order payment"
+import os
+from dotenv import load_dotenv  # pip install python-dotenv
+from easyswitch import (
+    EasySwitch, Provider, TransactionDetail, 
+    CustomerInfo, Currency, TransactionStatus
 )
 
-response = client.send_payment(transaction)
-print(f"Payment URL: {response.payment_link}")
+# Load environment variables
+load_dotenv()
+
+# Initialize EasySwitch client
+client = EasySwitch.from_dict({
+    "providers": {
+        Provider.CINETPAY: {
+            "api_key": os.getenv("CINETPAY_API_KEY"),
+            "callback_url": os.getenv("CINETPAY_CALLBACK_URL"),
+            "environment": os.getenv("CINETPAY_ENVIRONMENT", "sandbox"),
+            "extra": {
+                "site_id": os.getenv("CINETPAY_SITE_ID"),
+                "secret": os.getenv("CINETPAY_SECRET"),
+                "channels": "MOBILE_MONEY",  # Payment method
+                "lang": "fr"  # Interface language (fr/en)
+            }
+        }
+    }
+})
+
+def create_sample_payment():
+    """Create a sample payment - perfect for testing"""
+    
+    # Create transaction details
+    transaction = TransactionDetail(
+        transaction_id="TXN-DEMO-001",  # Your unique ID
+        provider=Provider.CINETPAY,
+        amount=1000.0,  # Amount in XOF (10.00 XOF)
+        currency=Currency.XOF,  # West African CFA Franc
+        customer=CustomerInfo(
+            first_name="John",
+            last_name="Doe", 
+            phone_number="+22507123456",  # Must include country code
+            email="john.doe@example.com"  # Optional but recommended
+        ),
+        reason="Test payment - Order #DEMO-001"  # Description
+    )
+    
+    try:
+        # Send payment request to CinetPay
+        print("Creating payment...")
+        response = client.send_payment(transaction)
+        
+        print(f"Payment created successfully!")
+        print(f"Payment URL: {response.payment_link}")
+        print(f"Transaction ID: {response.transaction_id}")
+        print(f"Payment Token: {response.transaction_token}")
+        
+        return response
+        
+    except Exception as e:
+        print(f"Payment creation failed: {str(e)}")
+        return None
+
+def check_payment_status(transaction_id):
+    """Check the status of a payment"""
+    
+    try:
+        status_response = client.check_status(transaction_id)
+        
+        print(f"Transaction ID: {status_response.transaction_id}")
+        print(f"Status: {status_response.status}")
+        print(f"Amount: {status_response.amount} {status_response.currency}")
+        
+        if status_response.status == TransactionStatus.SUCCESSFUL:
+            print("Payment completed successfully!")
+        elif status_response.status == TransactionStatus.PENDING:
+            print("Payment is still pending...")
+        else:
+            print(f"Payment failed or cancelled: {status_response.status}")
+            
+        return status_response
+        
+    except Exception as e:
+        print(f"Status check failed: {str(e)}")
+        return None
+
+# Run the example
+if __name__ == "__main__":
+    print("CinetPay + EasySwitch Demo")
+    print("=" * 40)
+    
+    # Create a payment
+    payment_response = create_sample_payment()
+    
+    if payment_response:
+        print("\n" + "=" * 40)
+        print("Next Steps:")
+        print("1. Copy the payment URL above")
+        print("2. Open it in your browser")
+        print("3. Complete the payment using test credentials")
+        print("4. Check payment status using the transaction ID")
+        
+        print("\n" + "=" * 40)
+        print("Checking payment status...")
+        check_payment_status(payment_response.transaction_id)
 ```
+
+### Step 6: Run Your First Payment
+
+```bash
+# Run the example
+python payment_example.py
+```
+
+**Expected Output:**
+```
+CinetPay + EasySwitch Demo
+========================================
+Creating payment...
+Payment created successfully!
+Payment URL: https://checkout.cinetpay.com/payment/xxxxx
+Transaction ID: TXN-DEMO-001
+Payment Token: token_xxxxx
+
+========================================
+Next Steps:
+1. Copy the payment URL above
+2. Open it in your browser  
+3. Complete the payment using test credentials
+4. Check payment status using the transaction ID
+```
+
+### Step 7: Test Payment Credentials
+
+For **sandbox testing**, use these test credentials on the payment page:
+
+| Provider         | Phone Number          | PIN/Password |
+|------------------|-----------------------|--------------|
+| Orange Money     | `+225 07 XX XX XX XX` | `1234`       |
+| MTN Mobile Money | `+225 05 XX XX XX XX` | `0000`       |
+| Moov Money       | `+225 01 XX XX XX XX` | `1111`       |
+
+**Note**: Replace XX with any digits. These are test credentials for sandbox only.
+
+### What Happens Next?
+
+1. **Customer Journey**: User clicks payment URL → Selects payment method → Enters credentials → Payment processed
+2. **Webhook Notification**: CinetPay sends real-time notification to your webhook URL
+3. **Status Updates**: You can check payment status programmatically
+4. **Business Logic**: Update your database, send emails, fulfill orders, etc.
+
+### Ready for Production?
+
+Once testing is complete:
+1. Change `CINETPAY_ENVIRONMENT` to `"production"`
+2. Update API key to your live credentials (`cp_live_xxxxx`)
+3. Set up proper webhook handling (see [Webhook Handling](#webhook-handling))
+4. Implement proper error handling and logging
 
 ## Configuration
 
-### Environment Variables
+### Getting Your CinetPay Credentials
+
+**Step 1: Create CinetPay Account**
+1. Visit [CinetPay.com](https://cinetpay.com) and click "Sign Up"
+2. Choose "Merchant Account" for business use
+3. Complete KYC verification process
+4. Wait for account approval (usually 24-48 hours)
+
+**Step 2: Access Your Dashboard**
+1. Login to [CinetPay Dashboard](https://dashboard.cinetpay.com)
+2. Navigate to **Settings** → **API Integration**
+3. Copy your credentials (keep them secure!)
+
+### Environment Variables Setup
+
+**Option 1: Using .env file (Recommended)**
+
+Create a `.env` file in your project root:
 
 ```bash
-export CINETPAY_API_KEY="your_api_key"
-export CINETPAY_SITE_ID="your_site_id"
+# CinetPay Configuration
+CINETPAY_API_KEY=cp_test_your_actual_api_key_here
+CINETPAY_SITE_ID=123456
+CINETPAY_SECRET=your_actual_secret_key_here
+CINETPAY_CALLBACK_URL=https://yoursite.com/webhook/cinetpay
+CINETPAY_ENVIRONMENT=sandbox
+
+# Optional: Additional settings
+CINETPAY_CHANNELS=MOBILE_MONEY
+CINETPAY_LANG=fr
+CINETPAY_CURRENCY=XOF
+```
+
+**Option 2: System Environment Variables**
+
+```bash
+# Linux/Mac
+export CINETPAY_API_KEY="cp_test_your_api_key"
+export CINETPAY_SITE_ID="123456"
 export CINETPAY_SECRET="your_secret"
 export CINETPAY_CALLBACK_URL="https://yoursite.com/webhook/cinetpay"
 export CINETPAY_ENVIRONMENT="sandbox"
+
+# Windows
+set CINETPAY_API_KEY=cp_test_your_api_key
+set CINETPAY_SITE_ID=123456
+set CINETPAY_SECRET=your_secret
+set CINETPAY_CALLBACK_URL=https://yoursite.com/webhook/cinetpay
+set CINETPAY_ENVIRONMENT=sandbox
 ```
 
-### Configuration Options
+### Detailed Configuration Options
 
-| Parameter      | Required | Description           | Example                          |
-|----------------|----------|-----------------------|----------------------------------|
-| `api_key`      | Yes      | Your CinetPay API key | `"cp_live_abc123..."`            |
-| `site_id`      | Yes      | Your CinetPay site ID | `"123456"`                       |
-| `secret`       | Yes      | Your webhook secret   | `"secret_key"`                   |
-| `callback_url` | Yes      | Webhook endpoint URL  | `"https://yoursite.com/webhook"` |
-| `environment`  | Yes      | sandbox or production | `"sandbox"`                      |
-| `channels`     | No       | Payment channels      | `"MOBILE_MONEY"`                 |
-| `lang`         | No       | Interface language    | `"fr"`                           |
+| Parameter      | Required | Type   | Description                                  | Sandbox Example                    | Production Example              |
+|----------------|----------|--------|----------------------------------------------|------------------------------------|---------------------------------|
+| `api_key`      | Yes      | string | Your CinetPay API authentication key         | `cp_test_abc123...`                | `cp_live_xyz789...`             |
+| `site_id`      | Yes      | string | Unique identifier for your CinetPay site     | `"443626"`                         | `"123456"`                      |
+| `secret`       | Yes      | string | Secret key for webhook signature validation  | `"MySecretKey123"`                 | `"ProdSecret456"`               |
+| `callback_url` | Yes      | string | Your server endpoint for receiving webhooks  | `"https://test.mysite.com/webhook"` | `"https://mysite.com/webhook"`  |
+| `environment`  | Yes      | string | Operating environment                        | `"sandbox"`                        | `"production"`                  |
+| `channels`     | No       | string | Accepted payment methods                     | `"MOBILE_MONEY"`                   | `"MOBILE_MONEY,CARD"`           |
+| `lang`         | No       | string | Payment page language                        | `"fr"` (French)                    | `"en"` (English)                |
+| `currency`     | No       | string | Default currency for transactions            | `"XOF"`                            | `"XOF"`                         |
 
-### Client Initialization
+### Supported Payment Channels
+
+| Channel       | Code            | Countries          | Description                   |
+|---------------|-----------------|--------------------|-------------------------------|
+| Mobile Money  | `MOBILE_MONEY`  | CI, SN, ML, BF, NE | Orange Money, MTN, Moov, Wave |
+| Bank Cards    | `CARD`          | All                | Visa, Mastercard, local bank cards |
+| Bank Transfer | `BANK_TRANSFER` | CI, SN             | Direct bank-to-bank transfers |
+| All Methods   | `ALL`           | All                | Let customer choose payment method |
+
+### Multiple Initialization Methods
+
+**Method 1: Environment-based (Recommended for production)**
+
+```python
+import os
+from dotenv import load_dotenv
+from easyswitch import EasySwitch
+
+# Load .env file
+load_dotenv()
+
+# Initialize from environment variables
+client = EasySwitch.from_env()
+```
+
+**Method 2: Dictionary-based (Good for development)**
 
 ```python
 from easyswitch import EasySwitch, Provider
 
-client = EasySwitch.from_env()
-
 client = EasySwitch.from_dict({
     "providers": {
         Provider.CINETPAY: {
-            "api_key": "your_api_key",
-            "site_id": "your_site_id",
-            "secret": "your_secret",
+            "api_key": "cp_test_your_api_key",
             "callback_url": "https://yoursite.com/webhook/cinetpay",
             "environment": "sandbox",
             "extra": {
+                "site_id": "443626",
+                "secret": "MySecretKey123",
+                "channels": "MOBILE_MONEY",
+                "lang": "fr",
+                "currency": "XOF"
+            }
+        }
+    }
+})
+```
+
+**Method 3: Configuration file-based**
+
+Create `config.json`:
+```json
+{
+    "providers": {
+        "CINETPAY": {
+            "api_key": "cp_test_your_api_key",
+            "callback_url": "https://yoursite.com/webhook/cinetpay",
+            "environment": "sandbox",
+            "extra": {
+                "site_id": "443626",
+                "secret": "MySecretKey123",
                 "channels": "MOBILE_MONEY",
                 "lang": "fr"
             }
         }
+    }
+}
+```
+
+Load configuration:
+```python
+import json
+from easyswitch import EasySwitch
+
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+client = EasySwitch.from_dict(config)
+```
+
+### Environment-Specific Settings
+
+**Sandbox (Development) Configuration:**
+```python
+sandbox_config = {
+    "providers": {
+        Provider.CINETPAY: {
+            "api_key": "cp_test_your_sandbox_key",
+            "callback_url": "https://your-dev-site.ngrok.io/webhook/cinetpay",
+            "environment": "sandbox",
+            "extra": {
+                "site_id": "your_test_site_id",
+                "secret": "your_test_secret",
+                "channels": "MOBILE_MONEY",
+                "lang": "fr"
+            }
+        }
+    }
+}
+```
+
+**Production Configuration:**
+```python
+production_config = {
+    "providers": {
+        Provider.CINETPAY: {
+            "api_key": "cp_live_your_production_key",
+            "callback_url": "https://yoursite.com/webhook/cinetpay",
+            "environment": "production",
+            "extra": {
+                "site_id": "your_live_site_id",
+                "secret": "your_production_secret",
+                "channels": "MOBILE_MONEY,CARD",
+                "lang": "fr"
+            }
+        }
+    }
+}
+```
+
+### Configuration Validation
+
+Always validate your configuration before processing payments:
+
+```python
+def validate_cinetpay_config(client):
+    """Validate CinetPay configuration"""
+    try:
+        config = client.config.providers[Provider.CINETPAY]
+        
+        # Check required fields
+        required_fields = ['api_key', 'callback_url', 'environment']
+        missing_fields = [field for field in required_fields if not getattr(config, field, None)]
+        
+        if missing_fields:
+            raise ValueError(f"Missing required configuration: {missing_fields}")
+        
+        # Check extra fields
+        extra = config.extra or {}
+        required_extra = ['site_id', 'secret']
+        missing_extra = [field for field in required_extra if not extra.get(field)]
+        
+        if missing_extra:
+            raise ValueError(f"Missing required extra configuration: {missing_extra}")
+        
+        # Validate environment
+        if config.environment not in ['sandbox', 'production']:
+            raise ValueError("Environment must be 'sandbox' or 'production'")
+        
+        # Validate API key format
+        if config.environment == 'sandbox' and not config.api_key.startswith('cp_test_'):
+            print("Warning: Using non-test API key in sandbox environment")
+        elif config.environment == 'production' and not config.api_key.startswith('cp_live_'):
+            print("Warning: Using non-live API key in production environment")
+        
+        print("✅ CinetPay configuration is valid")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Configuration validation failed: {e}")
+        return False
+
+# Usage
+client = EasySwitch.from_env()
+validate_cinetpay_config(client)
     }
 })
 ```
@@ -110,8 +486,27 @@ client = EasySwitch.from_dict({
 
 ## Implementation Guide
 
+### Understanding CinetPay Payment Process
 
-## CinetPay Payment Flow
+CinetPay follows a **redirect-based payment flow** where customers are redirected to CinetPay's secure payment page to complete their transaction. Here's what happens:
+
+1. **Payment Creation**: Your app creates a payment request
+2. **Customer Redirect**: Customer is redirected to CinetPay payment page
+3. **Payment Processing**: Customer completes payment on CinetPay
+4. **Webhook Notification**: CinetPay notifies your app about payment status
+5. **Status Verification**: Your app can verify payment status anytime
+
+### Supported Currencies and Countries
+
+| Currency | Code | Countries | Minimum Amount |
+|----------|------|-----------|----------------|
+| West African CFA Franc | XOF | Côte d'Ivoire, Senegal, Mali, Burkina Faso, Niger | 100 XOF |
+| Central African CFA Franc | XAF | Cameroon, Chad, Central African Republic | 100 XAF |
+| Congolese Franc | CDF | Democratic Republic of Congo | 1000 CDF |
+| Guinean Franc | GNF | Guinea | 1000 GNF |
+| US Dollar | USD | All supported countries | 1 USD |
+
+### Technical Payment Flow
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -154,11 +549,11 @@ client = EasySwitch.from_dict({
          │◄──────────────────────┤                           │
 ```
 
-## Customer Payment Journey
+### Customer Payment Journey
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
-║                          PAYMENT FLOW                                ║
+║                          CUSTOMER PAYMENT JOURNEY                    ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
@@ -215,25 +610,84 @@ client = EasySwitch.from_dict({
 ║  PAYMENT STATES: PENDING → PROCESSING → SUCCESS                     ║
 ╚═════════════════════════════════════════════════════════════════════╝
 
-### Required Transaction Fields
+```
 
-| Field                   | Type     | Required | Description                   |
-|-------------------------|----------|----------|-------------------------------|
-| `transaction_id`        | string   | Yes      | Unique transaction identifier |
-| `amount`                | float    | Yes      | Amount in currency base unit  |
-| `currency`              | Currency | Yes      | XOF, XAF, CDF, GNF, USD       |
-| `customer.first_name`   | string   | Yes      | Customer first name           |
-| `customer.last_name`    | string   | Yes      | Customer last name            |
-| `customer.phone_number` | string   | Yes      | Phone with country code       |
-| `customer.email`        | string   | No       | Customer email address        |
-| `reason`                | string   | No       | Transaction description       |
+### Transaction Fields Reference
 
-### Creating a Payment
+#### Required Fields (Must be present)
+
+| Field | Type | Format | Description | Example | Validation Rules |
+|-------|------|--------|-------------|---------|------------------|
+| `transaction_id` | string | Any unique string | Your unique transaction identifier | `"TXN-ORDER-001"` | Max 100 chars, alphanumeric + hyphens |
+| `amount` | float | Positive number | Amount in currency base unit | `5000.0` | Min: 100 XOF, 1 USD |
+| `currency` | Currency | Enum value | Transaction currency | `Currency.XOF` | XOF, XAF, CDF, GNF, USD |
+| `customer.first_name` | string | Text | Customer's first name | `"Marie"` | 2-50 characters |
+| `customer.last_name` | string | Text | Customer's last name | `"Kouame"` | 2-50 characters |
+| `customer.phone_number` | string | E.164 format | Phone with country code | `"+22507123456"` | Must start with + |
+
+#### Optional Fields (Recommended)
+
+| Field | Type | Format | Description | Example | Benefits |
+|-------|------|--------|-------------|---------|----------|
+| `customer.email` | string | Valid email | Customer's email address | `"marie@example.com"` | Receipts, notifications |
+| `reason` | string | Text | Transaction description | `"Order #12345"` | Better tracking, receipts |
+| `metadata` | dict | Key-value pairs | Custom data for your use | `{"order_id": "12345"}` | Associate with your records |
+
+#### Field Validation Examples
+
+```python
+def validate_transaction_fields(data):
+    """Validate transaction data before creating payment"""
+    errors = []
+    
+    # Validate transaction_id
+    if not data.get('transaction_id'):
+        errors.append("transaction_id is required")
+    elif len(data['transaction_id']) > 100:
+        errors.append("transaction_id must be less than 100 characters")
+    
+    # Validate amount
+    amount = data.get('amount', 0)
+    currency = data.get('currency')
+    min_amounts = {
+        Currency.XOF: 100,
+        Currency.XAF: 100, 
+        Currency.CDF: 1000,
+        Currency.GNF: 1000,
+        Currency.USD: 1
+    }
+    
+    if amount < min_amounts.get(currency, 100):
+        errors.append(f"Amount too low for {currency}")
+    
+    # Validate phone number
+    phone = data.get('customer', {}).get('phone_number', '')
+    if not phone.startswith('+'):
+        errors.append("Phone number must include country code (+225...)")
+    
+    # Validate names
+    first_name = data.get('customer', {}).get('first_name', '')
+    if len(first_name) < 2:
+        errors.append("First name must be at least 2 characters")
+    
+    return errors
+
+# Usage
+validation_errors = validate_transaction_fields(transaction_data)
+if validation_errors:
+    print("Validation failed:", validation_errors)
+```
+
+### Advanced Payment Creation
+
+**Basic Payment Creation:**
 
 ```python
 from easyswitch import TransactionDetail, CustomerInfo, Currency, Provider
 
-def create_payment(order_data):
+def create_basic_payment(order_data):
+    """Create a basic payment - minimum required fields"""
+    
     transaction = TransactionDetail(
         transaction_id=f"TXN-{order_data['order_id']}",
         provider=Provider.CINETPAY,
@@ -257,6 +711,214 @@ def create_payment(order_data):
         }
     except Exception as e:
         return {'success': False, 'error': str(e)}
+
+**Advanced Payment Creation with Metadata:**
+
+```python
+def create_advanced_payment(order_data):
+    """Create payment with metadata and validation"""
+    
+    # Validate input data first
+    validation_errors = validate_transaction_fields(order_data)
+    if validation_errors:
+        return {'success': False, 'errors': validation_errors}
+    
+    # Create transaction with metadata
+    transaction = TransactionDetail(
+        transaction_id=f"TXN-{order_data['order_id']}-{int(time.time())}",
+        provider=Provider.CINETPAY,
+        amount=float(order_data['amount']),
+        currency=Currency.XOF,
+        customer=CustomerInfo(
+            first_name=order_data['customer']['first_name'].strip(),
+            last_name=order_data['customer']['last_name'].strip(),
+            phone_number=format_phone_number(order_data['customer']['phone']),
+            email=order_data['customer'].get('email', '').strip() or None
+        ),
+        reason=f"Order #{order_data['order_id']} - {order_data.get('description', 'Payment')}",
+        metadata={
+            'order_id': order_data['order_id'],
+            'customer_id': order_data.get('customer_id'),
+            'payment_method': 'mobile_money',
+            'created_at': datetime.now().isoformat(),
+            'source': 'web_checkout'
+        }
+    )
+    
+    try:
+        # Log payment attempt
+        logger.info(f"Creating payment for order {order_data['order_id']}")
+        
+        response = client.send_payment(transaction)
+        
+        # Log success
+        logger.info(f"Payment created: {response.transaction_id}")
+        
+        return {
+            'success': True,
+            'payment_url': response.payment_link,
+            'transaction_id': response.transaction_id,
+            'payment_token': response.transaction_token,
+            'expires_at': datetime.now() + timedelta(hours=1)  # CinetPay links expire after 1 hour
+        }
+        
+    except Exception as e:
+        # Log error
+        logger.error(f"Payment creation failed for order {order_data['order_id']}: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
+def format_phone_number(phone):
+    """Format phone number to E.164 standard"""
+    phone = phone.strip().replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+    
+    if not phone.startswith('+'):
+        # Assume Côte d'Ivoire if no country code
+        if phone.startswith('0'):
+            phone = '+225' + phone[1:]
+        elif len(phone) == 8:
+            phone = '+225' + phone
+        else:
+            phone = '+225' + phone
+    
+    return phone
+
+**Complete E-commerce Integration Example:**
+
+```python
+import time
+import logging
+from datetime import datetime, timedelta
+from easyswitch import EasySwitch, Provider, TransactionDetail, CustomerInfo, Currency
+
+logger = logging.getLogger(__name__)
+
+class PaymentService:
+    """Complete payment service for e-commerce integration"""
+    
+    def __init__(self):
+        self.client = EasySwitch.from_env()
+        self.payments = {}  # In production, use database
+    
+    def create_checkout_payment(self, order_data):
+        """Create payment for checkout process"""
+        
+        # Generate unique transaction ID
+        transaction_id = f"TXN-{order_data['order_id']}-{int(time.time())}"
+        
+        # Prepare customer data
+        customer_data = order_data['customer']
+        
+        # Create transaction
+        transaction = TransactionDetail(
+            transaction_id=transaction_id,
+            provider=Provider.CINETPAY,
+            amount=float(order_data['total_amount']),
+            currency=Currency.XOF,
+            customer=CustomerInfo(
+                first_name=customer_data['first_name'],
+                last_name=customer_data['last_name'],
+                phone_number=self.format_phone(customer_data['phone']),
+                email=customer_data.get('email')
+            ),
+            reason=f"Order #{order_data['order_id']} - {len(order_data['items'])} items",
+            metadata={
+                'order_id': order_data['order_id'],
+                'customer_id': customer_data.get('id'),
+                'items_count': len(order_data['items']),
+                'shipping_address': order_data.get('shipping_address'),
+                'checkout_source': 'web'
+            }
+        )
+        
+        try:
+            response = self.client.send_payment(transaction)
+            
+            # Store payment info
+            self.payments[transaction_id] = {
+                'order_id': order_data['order_id'],
+                'status': 'pending',
+                'created_at': datetime.now(),
+                'payment_url': response.payment_link,
+                'amount': order_data['total_amount']
+            }
+            
+            logger.info(f"Payment created: {transaction_id} for order {order_data['order_id']}")
+            
+            return {
+                'success': True,
+                'transaction_id': transaction_id,
+                'payment_url': response.payment_link,
+                'expires_in': 3600  # 1 hour
+            }
+            
+        except Exception as e:
+            logger.error(f"Payment creation failed: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'error_code': 'PAYMENT_CREATION_FAILED'
+            }
+    
+    def format_phone(self, phone):
+        """Format phone number for CinetPay"""
+        phone = phone.strip().replace(' ', '').replace('-', '')
+        
+        if not phone.startswith('+'):
+            # Add Côte d'Ivoire country code
+            phone = '+225' + phone.lstrip('0')
+        
+        return phone
+    
+    def get_payment_status(self, transaction_id):
+        """Get current payment status"""
+        try:
+            response = self.client.check_status(transaction_id)
+            
+            # Update local storage
+            if transaction_id in self.payments:
+                self.payments[transaction_id]['status'] = response.status.value
+                self.payments[transaction_id]['updated_at'] = datetime.now()
+            
+            return {
+                'success': True,
+                'transaction_id': response.transaction_id,
+                'status': response.status.value,
+                'amount': response.amount,
+                'currency': response.currency.value
+            }
+            
+        except Exception as e:
+            logger.error(f"Status check failed for {transaction_id}: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+
+# Usage example
+payment_service = PaymentService()
+
+order_data = {
+    'order_id': 'ORD-12345',
+    'total_amount': 15000,  # 150.00 XOF
+    'items': [
+        {'name': 'Product A', 'price': 10000, 'quantity': 1},
+        {'name': 'Product B', 'price': 5000, 'quantity': 1}
+    ],
+    'customer': {
+        'id': 'CUST-567',
+        'first_name': 'Aminata',
+        'last_name': 'Traore',
+        'phone': '07 12 34 56 78',
+        'email': 'aminata@example.com'
+    },
+    'shipping_address': 'Abidjan, Côte d\'Ivoire'
+}
+
+result = payment_service.create_checkout_payment(order_data)
+if result['success']:
+    print(f"Redirect customer to: {result['payment_url']}")
+else:
+    print(f"Payment failed: {result['error']}")
 ```
 
 ### Checking Payment Status
