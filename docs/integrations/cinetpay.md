@@ -39,7 +39,7 @@
 
 Before starting, ensure you have:
 - **Python 3.7+** installed on your system
-- A **CinetPay merchant account** (sign up at [CinetPay.com](https://cinetpay.com))
+- A **CinetPay merchant account** (sign up at [CinetPay Registration](https://app-new.cinetpay.com/register))
 - Your **API credentials** from CinetPay dashboard
 - A **text editor** or IDE (VS Code, PyCharm, etc.)
 
@@ -55,8 +55,8 @@ pip install easyswitch
 
 ### Step 3: Get Your CinetPay Credentials
 
-1. **Login to CinetPay Dashboard**
-   - Go to [CinetPay Dashboard](https://dashboard.cinetpay.com)
+1. **Login to CinetPay Merchant Portal**
+   - Go to [CinetPay Merchant Portal](https://app-new.cinetpay.com)
    - Navigate to **Settings** → **API Keys**
 
 2. **Copy Your Credentials**
@@ -67,7 +67,7 @@ pip install easyswitch
    ```
 
 3. **Create Webhook Endpoint**
-   - In dashboard, go to **Webhooks**
+   - In merchant portal, go to **Webhooks**
    - Add your webhook URL: `https://yoursite.com/webhook/cinetpay`
 
 ### Step 4: Environment Setup
@@ -252,13 +252,13 @@ Once testing is complete:
 ### Getting Your CinetPay Credentials
 
 **Step 1: Create CinetPay Account**
-1. Visit [CinetPay.com](https://cinetpay.com) and click "Sign Up"
+1. Visit [CinetPay Merchant Registration](https://app-new.cinetpay.com/register) to create your account
 2. Choose "Merchant Account" for business use
 3. Complete KYC verification process
 4. Wait for account approval (usually 24-48 hours)
 
 **Step 2: Access Your Dashboard**
-1. Login to [CinetPay Dashboard](https://dashboard.cinetpay.com)
+1. Login to [CinetPay Merchant Portal](https://app-new.cinetpay.com)
 2. Navigate to **Settings** → **API Integration**
 3. Copy your credentials (keep them secure!)
 
@@ -317,9 +317,9 @@ set CINETPAY_ENVIRONMENT=sandbox
 
 | Channel       | Code            | Countries          | Description                   |
 |---------------|-----------------|--------------------|-------------------------------|
-| Mobile Money  | `MOBILE_MONEY`  | CI, SN, ML, BF, NE | Orange Money, MTN, Moov, Wave |
-| Bank Cards    | `CARD`          | All                | Visa, Mastercard, local bank cards |
-| Bank Transfer | `BANK_TRANSFER` | CI, SN             | Direct bank-to-bank transfers |
+| Mobile Money  | `MOBILE_MONEY`  | CI, SN, ML, BF, NE, CM, TD, CF, CD, GN | Orange Money, MTN, Moov, Wave |
+| Bank Cards    | `CREDIT_CARD`   | Excludes GN, CD    | Visa, Mastercard, local bank cards (not available for GNF/CDF) |
+| Wallet        | `WALLET`        | Various            | Electronic wallets |
 | All Methods   | `ALL`           | All                | Let customer choose payment method |
 
 ### Multiple Initialization Methods
@@ -500,8 +500,8 @@ CinetPay follows a **redirect-based payment flow** where customers are redirecte
 
 | Currency | Code | Countries | Minimum Amount |
 |----------|------|-----------|----------------|
-| West African CFA Franc | XOF | Côte d'Ivoire, Senegal, Mali, Burkina Faso, Niger | 100 XOF |
-| Central African CFA Franc | XAF | Cameroon, Chad, Central African Republic | 100 XAF |
+| West African CFA Franc | XOF | Côte d'Ivoire, Senegal, Mali, Burkina Faso, Niger | 100 XOF (must be multiple of 5) |
+| Central African CFA Franc | XAF | Cameroon, Chad, Central African Republic | 100 XAF (must be multiple of 5) |
 | Congolese Franc | CDF | Democratic Republic of Congo | 1000 CDF |
 | Guinean Franc | GNF | Guinea | 1000 GNF |
 | US Dollar | USD | All supported countries | 1 USD |
@@ -619,7 +619,7 @@ CinetPay follows a **redirect-based payment flow** where customers are redirecte
 | Field | Type | Format | Description | Example | Validation Rules |
 |-------|------|--------|-------------|---------|------------------|
 | `transaction_id` | string | Any unique string | Your unique transaction identifier | `"TXN-ORDER-001"` | Max 100 chars, alphanumeric + hyphens |
-| `amount` | float | Positive number | Amount in currency base unit | `5000.0` | Min: 100 XOF, 1 USD |
+| `amount` | float | Positive number | Amount in currency base unit (converted to int internally) | `5000.0` | Min: 100 XOF, 1 USD |
 | `currency` | Currency | Enum value | Transaction currency | `Currency.XOF` | XOF, XAF, CDF, GNF, USD |
 | `customer.first_name` | string | Text | Customer's first name | `"Marie"` | 2-50 characters |
 | `customer.last_name` | string | Text | Customer's last name | `"Kouame"` | 2-50 characters |
@@ -659,6 +659,10 @@ def validate_transaction_fields(data):
     
     if amount < min_amounts.get(currency, 100):
         errors.append(f"Amount too low for {currency}")
+    
+    # CinetPay requires amounts to be multiples of 5 for XOF and XAF
+    if currency in [Currency.XOF, Currency.XAF] and amount % 5 != 0:
+        errors.append(f"Amount must be a multiple of 5 for {currency}")
     
     # Validate phone number
     phone = data.get('customer', {}).get('phone_number', '')
