@@ -468,11 +468,11 @@ def validate_cinetpay_config(client):
         elif config.environment == 'production' and not config.api_key.startswith('cp_live_'):
             print("Warning: Using non-live API key in production environment")
         
-        print("✅ CinetPay configuration is valid")
+        print("CinetPay configuration is valid")
         return True
         
     except Exception as e:
-        print(f"❌ Configuration validation failed: {e}")
+        print(f"Configuration validation failed: {e}")
         return False
 
 # Usage
