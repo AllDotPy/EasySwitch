@@ -20,234 +20,113 @@
 
 ---
 
-## Table of Contents
+## Overview
 
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Implementation Guide](#implementation-guide)
-- [Webhook Handling](#webhook-handling)
-- [Error Handling](#error-handling)
-- [Common Issues](#common-issues)
-- [Production Guidelines](#production-guidelines)
-- [API Reference](#api-reference)
+CinetPay is a comprehensive payment gateway that enables seamless mobile money transactions across West and Central Africa. As a leading payment service provider, CinetPay connects businesses to multiple mobile money operators, offering extensive coverage across diverse African markets and currencies. With its robust API and comprehensive mobile money network, CinetPay empowers businesses to accept payments from customers using various mobile wallets including Orange Money, MTN Mobile Money, Moov Money, and Wave.
 
----
+**Why use CinetPay with EasySwitch?**
 
-## Quick Start
+- **Wide Coverage**: Supports 10+ countries across West and Central Africa
+- **Multiple Operators**: Integrates with all major mobile money providers
+- **Multi-Currency**: Handles XOF, XAF, CDF, GNF, and USD
+- **Flexible Channels**: Supports mobile payments with redirect-based flow
+- **Real-time Processing**: Instant payment confirmation and webhook notifications
+- **Secure Integration**: HMAC signature validation and comprehensive error handling
 
-### Step 1: Prerequisites
+## Quick Start (5 Minutes)
 
-Before starting, ensure you have:
-- **Python 3.7+** installed on your system
-- A **CinetPay merchant account** (sign up at [CinetPay Registration](https://app-new.cinetpay.com))
-- Your **API credentials** from CinetPay dashboard
-- A **text editor** or IDE (VS Code, PyCharm, etc.)
-
-### Step 2: Installation
-
-Install EasySwitch using pip:
-
-```bash
-# Install EasySwitch SDK
-pip install easyswitch
-
-```
-
-### Step 3: Get Your CinetPay Credentials
-
-1. **Login to CinetPay Merchant Portal**
-   - Go to [CinetPay Merchant Portal](https://app-new.cinetpay.com)
-   - Navigate to **Settings** → **API Keys**
-
-2. **Copy Your Credentials**
-   ```
-   API Key: cp_test_xxxxxxxxx (for sandbox) or cp_live_xxxxxxxxx (for production)
-   Site ID: 123456
-   Secret Key: your_secret_key_here
-   ```
-
-3. **Create Webhook Endpoint**
-   - In merchant portal, go to **Webhooks**
-   - Add your webhook URL: `https://yoursite.com/webhook/cinetpay`
-
-### Step 4: Environment Setup
-
-Create a `.env` file in your project root:
-
-```bash
-# .env file
-CINETPAY_API_KEY=cp_test_your_api_key_here
-CINETPAY_SITE_ID=your_site_id
-CINETPAY_SECRET=your_secret_key
-CINETPAY_CALLBACK_URL=https://yoursite.com/webhook/cinetpay
-CINETPAY_ENVIRONMENT=sandbox
-```
-
-**Important**: Never commit your `.env` file to version control!
-
-### Step 5: Your First Payment (Complete Example)
-
-Create a file called `payment_example.py`:
+For developers who want to get started immediately, ensure you have completed the [Installation](../getting-started/installation.md) steps, then:
 
 ```python
-import os
-from dotenv import load_dotenv  # pip install python-dotenv
+# 1. Install
+pip install easyswitch
+
+# 2. Configure (use your CinetPay credentials)
+from easyswitch import EasySwitch, Provider
+
+client = EasySwitch.from_env()  # Reads from .env file
+
+# 3. Send a payment
 from easyswitch import (
-    EasySwitch, Provider, TransactionDetail, 
-    CustomerInfo, Currency, TransactionStatus
+    TransactionDetail, Currency, CustomerInfo, 
+    TransactionStatus, TransactionType
 )
 
-# Load environment variables
-load_dotenv()
+transaction = TransactionDetail(
+    transaction_id="TXN-001",
+    provider=Provider.CINETPAY,
+    status=TransactionStatus.PENDING,
+    amount=5000,  # 50.00 XOF (amount in minor units)
+    currency=Currency.XOF,
+    transaction_type=TransactionType.PAYMENT,
+    customer=CustomerInfo(
+        first_name="John",
+        last_name="Doe",
+        email="john@example.com",
+        phone_number="+22507123456"  # E.164 format required
+    ),
+    reason="Test payment"
+)
 
-# Initialize EasySwitch client
-client = EasySwitch.from_dict({
-    "providers": {
-        Provider.CINETPAY: {
-            "api_key": os.getenv("CINETPAY_API_KEY"),
-            "callback_url": os.getenv("CINETPAY_CALLBACK_URL"),
-            "environment": os.getenv("CINETPAY_ENVIRONMENT", "sandbox"),
-            "extra": {
-                "site_id": os.getenv("CINETPAY_SITE_ID"),
-                "secret": os.getenv("CINETPAY_SECRET"),
-                "channels": "MOBILE_MONEY",  # Payment method
-                "lang": "fr"  # Interface language (fr/en)
-            }
-        }
-    }
-})
-
-def create_sample_payment():
-    """Create a sample payment - perfect for testing"""
-    
-    # Create transaction details
-    transaction = TransactionDetail(
-        transaction_id="TXN-DEMO-001",  # Your unique ID
-        provider=Provider.CINETPAY,
-        amount=1000.0,  # Amount in XOF (10.00 XOF)
-        currency=Currency.XOF,  # West African CFA Franc
-        customer=CustomerInfo(
-            first_name="John",
-            last_name="Doe", 
-            phone_number="+22507123456",  # Must include country code
-            email="john.doe@example.com"  # Optional but recommended
-        ),
-        reason="Test payment - Order #DEMO-001"  # Description
-    )
-    
-    try:
-        # Send payment request to CinetPay
-        print("Creating payment...")
-        response = client.send_payment(transaction)
-        
-        print(f"Payment created successfully!")
-        print(f"Payment URL: {response.payment_link}")
-        print(f"Transaction ID: {response.transaction_id}")
-        print(f"Payment Token: {response.transaction_token}")
-        
-        return response
-        
-    except Exception as e:
-        print(f"Payment creation failed: {str(e)}")
-        return None
-
-def check_payment_status(transaction_id):
-    """Check the status of a payment"""
-    
-    try:
-        status_response = client.check_status(transaction_id)
-        
-        print(f"Transaction ID: {status_response.transaction_id}")
-        print(f"Status: {status_response.status}")
-        print(f"Amount: {status_response.amount} {status_response.currency}")
-        
-        if status_response.status == TransactionStatus.SUCCESSFUL:
-            print("Payment completed successfully!")
-        elif status_response.status == TransactionStatus.PENDING:
-            print("Payment is still pending...")
-        else:
-            print(f"Payment failed or cancelled: {status_response.status}")
-            
-        return status_response
-        
-    except Exception as e:
-        print(f"Status check failed: {str(e)}")
-        return None
-
-# Run the example
-if __name__ == "__main__":
-    print("CinetPay + EasySwitch Demo")
-    print("=" * 40)
-    
-    # Create a payment
-    payment_response = create_sample_payment()
-    
-    if payment_response:
-        print("\n" + "=" * 40)
-        print("Next Steps:")
-        print("1. Copy the payment URL above")
-        print("2. Open it in your browser")
-        print("3. Complete the payment using test credentials")
-        print("4. Check payment status using the transaction ID")
-        
-        print("\n" + "=" * 40)
-        print("Checking payment status...")
-        check_payment_status(payment_response.transaction_id)
+response = client.send_payment(transaction)
+print(f"Payment URL: {response.payment_link}")
+print(f"Status: {response.status}")
 ```
 
-### Step 6: Run Your First Payment
+That's it! See [Complete Setup](#setup) for detailed configuration and advanced features.
 
-```bash
-# Run the example
-python payment_example.py
-```
+## When to Use CinetPay
 
-**Expected Output:**
-```
-CinetPay + EasySwitch Demo
-========================================
-Creating payment...
-Payment created successfully!
-Payment URL: https://checkout.cinetpay.com/payment/xxxxx
-Transaction ID: TXN-DEMO-001
-Payment Token: token_xxxxx
+### Best For:
+- Mobile money payments in West/Central Africa
+- Multi-operator support (Orange, MTN, Moov, Wave)
+- Multi-country operations (10+ countries)
+- Redirect-based payment flows
+- Real-time payment processing
+- Cross-border transactions in Africa
 
-========================================
-Next Steps:
-1. Copy the payment URL above
-2. Open it in your browser  
-3. Complete the payment using test credentials
-4. Check payment status using the transaction ID
-```
+### Not Ideal For:
+- Automated refunds (manual process required via dashboard)
+- Transaction cancellations (not supported by API)
+- Card payments (CinetPay focuses on mobile money)
+- Markets outside Africa
+- Direct mobile money API without redirect
 
-### Step 7: Test Payment Credentials
+### Consider Alternatives If You Need:
+- Automated refund processing
+- Programmatic transaction cancellation
+- Card payment processing
+- Non-African markets
+- USSD-based direct payments
 
-For **sandbox testing**, use these test credentials on the payment page:
+## Prerequisites
 
-| Provider         | Phone Number          | PIN/Password |
-|------------------|-----------------------|--------------|
-| Orange Money     | `+225 07 XX XX XX XX` | `1234`       |
-| MTN Mobile Money | `+225 05 XX XX XX XX` | `0000`       |
-| Moov Money       | `+225 01 XX XX XX XX` | `1111`       |
+Before integrating CinetPay with EasySwitch, ensure you have:
 
-**Note**: Replace XX with any digits. These are test credentials for sandbox only.
+- EasySwitch library installed. For setup instructions, see [Installation](../getting-started/installation.md)
+- A CinetPay merchant account (create one at [CinetPay Registration](https://app-new.cinetpay.com))
+- Development and production API credentials from your CinetPay dashboard
+- API key, Site ID, and Secret key for both environments
+- Understanding of your target markets and supported mobile money operators
 
-### What Happens Next?
+## Supported Countries & Operators
 
-1. **Customer Journey**: User clicks payment URL → Selects payment method → Enters credentials → Payment processed
-2. **Webhook Notification**: CinetPay sends real-time notification to your webhook URL
-3. **Status Updates**: You can check payment status programmatically
-4. **Business Logic**: Update your database, send emails, fulfill orders, etc.
+CinetPay supports mobile money transactions across multiple African countries:
 
-### Ready for Production?
+| Country | Operators | Currency |
+|---------|-----------|----------|
+| Côte d'Ivoire | Orange Money, MTN Mobile Money, Moov Money, Wave | XOF |
+| Senegal | Orange Money, Free Money, Wave | XOF |
+| Mali | Orange Money, Moov Money | XOF |
+| Burkina Faso | Orange Money, Moov Money | XOF |
+| Niger | Orange Money, Airtel Money | XOF |
+| Cameroon | Orange Money, MTN Mobile Money | XAF |
+| Chad | Airtel Money, Tigo Cash | XAF |
+| Central African Republic | Orange Money, Moov Money | XAF |
+| Democratic Republic of Congo | Orange Money, Airtel Money, Vodacom M-Pesa | CDF |
+| Guinea | Orange Money, MTN Mobile Money | GNF |
 
-Once testing is complete:
-1. Change `CINETPAY_ENVIRONMENT` to `"production"`
-2. Update API key to your live credentials (`cp_live_xxxxx`)
-3. Set up proper webhook handling (see [Webhook Handling](#webhook-handling))
-4. Implement proper error handling and logging
-
-## Configuration
+## Setup
 
 ### Getting Your CinetPay Credentials
 
@@ -483,6 +362,145 @@ validate_cinetpay_config(client)
 ```
 
 ---
+
+## EasySwitch Methods
+
+EasySwitch provides a unified interface for all payment operations:
+
+### Core Methods
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `send_payment(transaction)` | Send a payment transaction | PaymentResponse |
+| `check_status(transaction_id)` | Check transaction status | TransactionStatusResponse |
+| `validate_webhook(payload, headers)` | Validate webhook signature | bool |
+| `parse_webhook(payload, headers)` | Parse webhook into WebhookEvent | WebhookEvent |
+
+> **Note**: `cancel_transaction()`, `refund()`, and `get_transaction_detail()` are not supported by CinetPay. See [CinetPay Limitations](#cinetpay-limitations) for alternatives.
+
+### Configuration Methods
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `from_env(env_file)` | Initialize from environment variables | EasySwitch |
+| `from_json(json_file)` | Initialize from JSON file | EasySwitch |
+| `from_yaml(yaml_file)` | Initialize from YAML file | EasySwitch |
+| `from_dict(config_dict)` | Initialize from Python dictionary | EasySwitch |
+| `from_multi_sources(**sources)` | Initialize from multiple sources | EasySwitch |
+
+## API Methods
+
+### 1. Create Payment
+
+Initiate a payment transaction using EasySwitch's `TransactionDetail` class and `send_payment` method.
+
+```python
+# Create a TransactionDetail object
+transaction = TransactionDetail(
+    transaction_id="TXN-123456",  # Unique ID generated by your system
+    provider=Provider.CINETPAY,
+    status=TransactionStatus.PENDING,
+    amount=1000,  # Amount in minor units (1000 = 10.00 XOF)
+    currency=Currency.XOF,
+    transaction_type=TransactionType.PAYMENT,
+    customer=CustomerInfo(
+        first_name="Jean",
+        last_name="Kouame",
+        email="jean.kouame@email.com",
+        phone_number="+22507123456"  # Must be in E.164 format
+    ),
+    reason="Product ABC Purchase",
+    reference="REF-789012",  # Optional business reference
+    callback_url="https://your-site.com/webhook/cinetpay",  # Override default
+    return_url="https://your-site.com/success",         # Override default
+    metadata={
+        "order_id": "ORD-12345",   # Optional business identifier
+        "customer_id": "CUST-567"  # Additional context
+    }
+)
+
+# Send payment using EasySwitch
+response = client.send_payment(transaction)
+
+# Check response properties
+print(f"Local Transaction ID: {transaction.transaction_id}")  # Your internal ID
+print(f"CinetPay Payment Token: {response.transaction_token}")   # CinetPay's payment token
+print(f"Payment URL: {response.payment_link}")              # Redirect URL
+print(f"Status: {response.status}")
+print(f"Is Successful: {response.is_successful}")
+print(f"Is Pending: {response.is_pending}")
+```
+
+**Response Object (PaymentResponse):**
+
+```python
+PaymentResponse(
+    transaction_id="TXN-123456",      # Your transaction ID (echoed back)
+    provider=Provider.CINETPAY,
+    status=TransactionStatus.PENDING,
+    amount=1000,
+    currency=Currency.XOF,
+    payment_link="https://checkout.cinetpay.com/...",  # Redirect URL
+    transaction_token="pay_token_abc123",           
+    created_at=datetime(2024, 1, 15, 10, 30, 0),
+    customer=CustomerInfo(...),
+    raw_response={...}  # Raw CinetPay response
+)
+```
+
+**Important Notes:**
+
+- **Amount Format**: Always provide amounts in minor units (e.g., 1000 for 10.00 XOF)
+- **Phone Format**: Phone numbers must be in E.164 format (+country_code + number)
+- **Redirect Flow**: Returns `payment_link` for customer redirect to CinetPay payment page
+- **Transaction ID**: Your internal ID is echoed back; CinetPay uses internal references
+
+### 2. Check Payment Status
+
+Retrieve the current status of a payment transaction using EasySwitch's `check_status` method.
+
+```python
+# Check transaction status (use your transaction ID)
+transaction_id = "TXN-123456"
+response = client.check_status(transaction_id)
+
+status = response.status
+print(f"Status: {status}")
+print(f"Amount: {response.amount}")
+
+# Check specific status types
+if status == TransactionStatus.SUCCESSFUL:
+    print("Payment completed successfully!")
+elif status == TransactionStatus.PENDING:
+    print("Payment is still processing...")
+elif status == TransactionStatus.FAILED:
+    print("Payment failed")
+```
+
+**Response Object (TransactionStatusResponse):**
+
+```python
+TransactionStatusResponse(
+    transaction_id="TXN-123456",      # Your transaction ID
+    provider=Provider.CINETPAY,
+    status=TransactionStatus.SUCCESSFUL,
+    amount=1000,
+    data={...}  # Raw CinetPay status response
+)
+```
+
+**Available TransactionStatus Values:**
+
+```python
+class TransactionStatus(str, Enum):
+    PENDING = "pending"        # Transaction initiated
+    SUCCESSFUL = "successful"  # Payment completed
+    FAILED = "failed"         # Payment failed
+    ERROR = "error"           # System error
+    CANCELLED = "cancelled"   # User cancelled
+    EXPIRED = "expired"       # Payment expired
+    UNKNOWN = "unknown"       # Status unclear
+```
 
 ## Implementation Guide
 
@@ -1051,6 +1069,246 @@ def payment_with_retry(transaction, max_attempts=3):
 ```
 
 ---
+
+## CinetPay Limitations
+
+**Important**: CinetPay has several API limitations that affect integration design:
+
+### Unsupported Operations
+
+| Operation | Status | Alternative |
+|-----------|--------|-------------|
+| Refunds | Not supported | Manual processing via dashboard |
+| Transaction Cancellation | Not supported | Contact CinetPay support |
+| Partial Refunds | Not supported | Manual processing via dashboard |
+
+### Workarounds
+
+```python
+# Example: Handle unsupported operations gracefully
+def attempt_refund(transaction_id: str, amount: float, reason: str):
+    """Attempt refund with fallback to manual processing"""
+    try:
+        # This will raise UnsupportedOperationError
+        refund_response = client.refund(transaction_id, amount=amount)
+        return refund_response
+    except UnsupportedOperationError:
+        # Log refund request for manual processing
+        refund_record = {
+            "transaction_id": transaction_id,
+            "refund_amount": amount,
+            "reason": reason,
+            "status": "pending_manual_processing",
+            "created_at": datetime.now(),
+            "provider": "cinetpay_manual"
+        }
+        # Save to database for manual processing
+        save_manual_refund_request(refund_record)
+
+        # Notify administrators
+        notify_manual_refund_required(refund_record)
+
+        return {
+            "status": "manual_processing_required",
+            "message": "Refund request logged for manual processing",
+            "reference": refund_record
+        }
+
+def save_manual_refund_request(refund_record: dict):
+    """Save refund request for manual processing"""
+    # Implementation depends on your system
+    pass
+
+def notify_manual_refund_required(refund_record: dict):
+    """Notify administrators of manual refund requirement"""
+    # Send email/notification to administrators
+    pass
+```
+
+## Testing
+
+### Test Environment Setup
+
+CinetPay provides a sandbox environment for testing your integration:
+
+```python
+# Test configuration
+test_config = {
+    "debug": True,
+    "providers": {
+        Provider.CINETPAY: {
+            "environment": "sandbox",
+            "api_key": "cp_test_your_test_api_key",
+            "timeout": 30,
+            "extra": {
+                "site_id": "your_test_site_id",
+                "secret": "your_test_secret_key",
+                "channels": "MOBILE_MONEY",
+                "lang": "fr"
+            }
+        }
+    }
+}
+
+test_client = EasySwitch.from_dict(test_config)
+```
+
+### Test Phone Numbers
+
+Use these test phone numbers to simulate different payment scenarios:
+
+| Country | Operator | Phone Number | Expected Result |
+|---------|----------|--------------|-----------------|
+| Côte d'Ivoire | Orange | `+22507000001` | Success |
+| Côte d'Ivoire | Orange | `+22507000000` | Failure |
+| Côte d'Ivoire | MTN | `+22505000001` | Success |
+| Côte d'Ivoire | MTN | `+22505000000` | Failure |
+| Senegal | Orange | `+22177000001` | Success |
+| Senegal | Orange | `+22177000000` | Failure |
+
+### Test Amounts
+
+For testing different scenarios, use these amounts:
+
+| Amount (Minor Units) | Display Amount | Expected Result |
+|---------------------|----------------|-----------------|
+| 100 | 1.00 XOF | Success (minimum amount) |
+| 50 | 0.50 XOF | Failure (below minimum) |
+| 100000 | 1000.00 XOF | Success |
+| 10000000 | 100000.00 XOF | May fail (exceeds some limits) |
+
+### Complete Testing Example
+
+```python
+import asyncio
+from easyswitch import (
+    EasySwitch, Provider, TransactionDetail,
+    TransactionStatus, Currency, CustomerInfo
+)
+
+class CinetPayTestSuite:
+    def __init__(self):
+        self.test_config = {
+            "debug": True,
+            "providers": {
+                Provider.CINETPAY: {
+                    "environment": "sandbox",
+                    "api_key": "cp_test_your_api_key",
+                    "timeout": 30,
+                    "extra": {
+                        "site_id": "your_test_site_id",
+                        "secret": "your_test_secret",
+                        "channels": "MOBILE_MONEY",
+                        "lang": "fr"
+                    }
+                }
+            }
+        }
+        self.client = EasySwitch.from_dict(self.test_config)
+
+    def test_successful_payment(self):
+        """Test successful payment scenario"""
+        customer = CustomerInfo(
+            first_name="Test",
+            last_name="User",
+            email="test@example.com",
+            phone_number="+22507000001"  # Success test number
+        )
+
+        transaction = TransactionDetail(
+            transaction_id="TEST-SUCCESS-001",
+            provider=Provider.CINETPAY,
+            amount=1000,  # 10.00 XOF
+            currency=Currency.XOF,
+            customer=customer,
+            reason="Test successful payment"
+        )
+
+        try:
+            response = self.client.send_payment(transaction)
+            assert response.status in [TransactionStatus.PENDING, TransactionStatus.SUCCESSFUL]
+            print("Successful payment test passed")
+            return response
+        except Exception as e:
+            print(f"Successful payment test failed: {e}")
+            raise
+
+    def test_failed_payment(self):
+        """Test failed payment scenario"""
+        customer = CustomerInfo(
+            first_name="Test",
+            last_name="User",
+            email="test@example.com",
+            phone_number="+22507000000"  # Failure test number
+        )
+
+        transaction = TransactionDetail(
+            transaction_id="TEST-FAIL-001",
+            provider=Provider.CINETPAY,
+            amount=1000,
+            currency=Currency.XOF,
+            customer=customer,
+            reason="Test failed payment"
+        )
+
+        try:
+            response = self.client.send_payment(transaction)
+            # Payment may initially succeed but fail later
+            print("Payment created, check status for failure")
+            return response
+        except Exception as e:
+            print(f"Failed payment test passed: {e}")
+            return None
+
+    def test_status_checking(self, transaction_id: str):
+        """Test status checking functionality"""
+        try:
+            status_response = self.client.check_status(transaction_id)
+            print(f"Status check successful: {status_response.status}")
+            return status_response
+        except Exception as e:
+            print(f"Status check failed: {e}")
+            raise
+
+    def run_all_tests(self):
+        """Run complete test suite"""
+        print("Starting CinetPay integration test suite...")
+
+        # Test successful payment
+        success_response = self.test_successful_payment()
+
+        # Test failed payment
+        self.test_failed_payment()
+
+        # Test status checking if we have a transaction
+        if success_response:
+            self.test_status_checking(success_response.transaction_id)
+
+        print("Test suite completed!")
+
+# Run tests
+if __name__ == "__main__":
+    test_suite = CinetPayTestSuite()
+    test_suite.run_all_tests()
+```
+
+### Testing Checklist
+
+Before going live, ensure you've tested:
+
+- Payment creation with valid data
+- Payment creation with invalid data
+- Payment status checking for all status types
+- Webhook validation and parsing
+- Webhook handling for all event types
+- Error handling for all exception types
+- Different phone number formats (E.164)
+- Amount validation (minimum/maximum limits, multiple of 5 for XOF/XAF)
+- Different currencies (XOF, XAF, CDF, GNF, USD)
+- Different mobile operators per country
+- Network timeout scenarios
+- Authentication with invalid credentials
+- Configuration validation
 
 ## Common Issues
 
