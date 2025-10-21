@@ -1,0 +1,3083 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://your-docs-url.com/integrations/fedapay/">
+      
+      
+        <link rel="prev" href="../../getting-started/configuration/">
+      
+      
+        <link rel="next" href="../paygate/">
+      
+      
+      <link rel="icon" href="../../assets/logo/dotpy_blue_transparent.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>FedaPay - EasySwitch SDK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CChivo+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Chivo Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/msdl.v2.css">
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/theme.v3.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fedapay-integration-with-easyswitch" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="EasySwitch SDK" class="md-header__button md-logo" aria-label="EasySwitch SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo/dotpy_blue_transparent.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EasySwitch SDK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              FedaPay
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AllDotPy/EasySwitch" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    EasySwitch
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Integrations
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api-reference/shared-types/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="EasySwitch SDK" class="md-nav__button md-logo" aria-label="EasySwitch SDK" data-md-component="logo">
+      
+  <img src="../../assets/logo/dotpy_blue_transparent.png" alt="logo">
+
+    </a>
+    EasySwitch SDK
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AllDotPy/EasySwitch" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    EasySwitch
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../getting-started/installation/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Integrations
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Integrations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    FedaPay
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    FedaPay
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-countries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported Countries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative-configuration-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternative Configuration Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Environment Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#easyswitch-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      EasySwitch Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EasySwitch Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-payment" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Create Payment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-check-payment-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Check Payment Status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-fedapay-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. FedaPay Limitations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. FedaPay Limitations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unsupported-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unsupported Operations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workarounds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workarounds
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webhook-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Webhook Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#easyswitch-webhook-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      EasySwitch Webhook Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook-configuration-with-easyswitch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Configuration with EasySwitch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Events
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhookevent-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebhookEvent Object
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Security
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-each-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Each Method
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-webhook-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Webhook Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#easyswitch-data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      EasySwitch Data Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EasySwitch Data Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transactiondetail-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      TransactionDetail Class
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paymentresponse-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      PaymentResponse Class
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customerinfo-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      CustomerInfo Class
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transaction-status-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Status Mapping
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-environment-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Environment Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-phone-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Phone Numbers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-card-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Card Numbers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-integration-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complete Integration Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Checklist
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limits-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Limits &amp; Considerations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Limits &amp; Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transaction-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Limits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transaction-fees" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Fees
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#processing-times" class="md-nav__link">
+    <span class="md-ellipsis">
+      Processing Times
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rate Limits
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Support &amp; Resources
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Support &amp; Resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#official-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Official Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#community-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Community &amp; Help
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Help
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paygate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    PayGate
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cinetpay/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CinetPay
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../semoa/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Semoa
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bizao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bizao
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../api-reference/shared-types/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-countries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported Countries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative-configuration-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alternative Configuration Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Environment Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#easyswitch-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      EasySwitch Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EasySwitch Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-payment" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Create Payment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-check-payment-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Check Payment Status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-fedapay-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. FedaPay Limitations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. FedaPay Limitations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unsupported-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unsupported Operations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workarounds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Workarounds
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webhook-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Webhook Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#easyswitch-webhook-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      EasySwitch Webhook Methods
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook-configuration-with-easyswitch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Configuration with EasySwitch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Events
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhookevent-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebhookEvent Object
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webhook-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      Webhook Security
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-to-use-each-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      When to Use Each Method
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-webhook-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Webhook Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#easyswitch-data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      EasySwitch Data Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EasySwitch Data Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transactiondetail-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      TransactionDetail Class
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paymentresponse-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      PaymentResponse Class
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customerinfo-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      CustomerInfo Class
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transaction-status-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Status Mapping
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-environment-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Environment Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-phone-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Phone Numbers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-card-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Card Numbers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#complete-integration-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complete Integration Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Checklist
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limits-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Limits &amp; Considerations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Limits &amp; Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transaction-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Limits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transaction-fees" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transaction Fees
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#processing-times" class="md-nav__link">
+    <span class="md-ellipsis">
+      Processing Times
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rate Limits
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Support &amp; Resources
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Support &amp; Resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#official-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Official Resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#community-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Community &amp; Help
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      Getting Help
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/AllDotPy/EasySwitch/edit/master/docs/integrations/fedapay.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/AllDotPy/EasySwitch/raw/master/docs/integrations/fedapay.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="fedapay-integration-with-easyswitch">FedaPay Integration with EasySwitch<a class="headerlink" href="#fedapay-integration-with-easyswitch" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>FedaPay is an innovative online payment platform designed to meet the needs of freelancers, businesses, e-commerce platforms, non-governmental organizations (NGOs), and government structures. With its intuitive interface and rapid integration capabilities, FedaPay not only facilitates online payment acceptance but also enables deposits to users' Mobile Money accounts. The platform ensures efficient and secure transaction management with smooth financial flow tracking, making payment and deposit operations simple and reliable.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Before integrating FedaPay with EasySwitch, ensure you have:</p>
+<ul>
+<li>EasySwitch library is installed. For setup instructions, see <a href="../../getting-started/installation/">Installation</a>.</li>
+<li>A FedaPay account (create one at <a href="https://fedapay.com">fedapay.com</a>)</li>
+<li>API keys (test and live) from your FedaPay dashboard</li>
+</ul>
+<h2 id="supported-countries">Supported Countries<a class="headerlink" href="#supported-countries" title="Permanent link">&para;</a></h2>
+<p>FedaPay supports the following countries and payment methods:</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Mobile Money Operators</th>
+<th>Card Payments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Benin</strong></td>
+<td>MTN, Moov, Celtiis, BMO, Coris Money</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Togo</strong></td>
+<td>Mixx By Yas, Moov</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Guinea</strong></td>
+<td>MTN</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Côte d'Ivoire</strong></td>
+<td>MTN, Moov, Wave, Orange</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Niger</strong></td>
+<td>Airtel</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Senegal</strong></td>
+<td>Wave, Orange, Free Senegal</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Mali</strong></td>
+<td>Orange</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Burkina Faso</strong></td>
+<td>Moov, Orange</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>All Regions</strong></td>
+<td>-</td>
+<td>Visa/MasterCard</td>
+</tr>
+</tbody>
+</table>
+<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
+<h3 id="basic-configuration">Basic Configuration<a class="headerlink" href="#basic-configuration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">easyswitch</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EasySwitch</span><span class="p">,</span> 
+    <span class="n">Provider</span><span class="p">,</span>
+    <span class="n">TransactionDetail</span><span class="p">,</span>
+    <span class="n">PaymentResponse</span><span class="p">,</span>
+    <span class="n">TransactionStatus</span><span class="p">,</span>
+    <span class="n">Currency</span><span class="p">,</span>
+    <span class="n">TransactionType</span><span class="p">,</span>
+    <span class="n">CustomerInfo</span>
+<span class="p">)</span>
+
+<span class="c1"># Prepare FedaPay configuration</span>
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;default_provider&quot;</span><span class="p">:</span> <span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">,</span>
+    <span class="s2">&quot;providers&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;api_secret&quot;</span><span class="p">:</span> <span class="s2">&quot;your_fedapay_secret_key&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;callback_url&quot;</span><span class="p">:</span> <span class="s2">&quot;your_fedapay_callback_url&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>  <span class="c1"># timeout in seconds for HTTP requests</span>
+            <span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="s2">&quot;sandbox&quot;</span><span class="p">,</span>    <span class="c1"># &#39;sandbox&#39; or &#39;production&#39;</span>
+            <span class="s2">&quot;extra&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;webhook_secret&quot;</span><span class="p">:</span> <span class="s2">&quot;your_fedapay_webhook_secret&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># Initialize EasySwitch with FedaPay</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="alternative-configuration-methods">Alternative Configuration Methods<a class="headerlink" href="#alternative-configuration-methods" title="Permanent link">&para;</a></h3>
+<p>EasySwitch supports multiple configuration methods:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. From environment variables</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>
+
+<span class="c1"># 2. From JSON file</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+
+<span class="c1"># 3. From YAML file</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+
+<span class="c1"># 4. From multiple sources (with overrides)</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_multi_sources</span><span class="p">(</span>
+    <span class="n">env_file</span><span class="o">=</span><span class="s2">&quot;.env&quot;</span><span class="p">,</span>
+    <span class="n">json_file</span><span class="o">=</span><span class="s2">&quot;overrides.json&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<h3 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
+<p>Create a <code>.env</code> file or set the following environment variables:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># FedaPay Configuration</span>
+<span class="nv">EASYSWITCH_FEDAPAY_SECRET_KEY</span><span class="o">=</span>sk_sandbox_your_api_secret_here
+<span class="nv">EASYSWITCH_FEDAPAY_ENVIRONMENT</span><span class="o">=</span>sandbox
+<span class="nv">EASYSWITCH_FEDAPAY_WEBHOOK_SECRET</span><span class="o">=</span>your_webhook_secret_here
+<span class="nv">EASYSWITCH_FEDAPAY_CALLBACK_URL</span><span class="o">=</span>https://your-domain.com/webhook/fedapay
+</code></pre></div>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<p>FedaPay uses API key authentication. EasySwitch automaticaly set this for requests. </p>
+<div class="highlight"><pre><span></span><code><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{</span><span class="n">api_secret</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span>
+<span class="p">}</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Security Note</strong>: Never expose your secret API key in client-side code. Always use environment variables or secure configuration management.</p>
+</blockquote>
+<h2 id="easyswitch-methods">EasySwitch Methods<a class="headerlink" href="#easyswitch-methods" title="Permanent link">&para;</a></h2>
+<p>EasySwitch provides a unified interface for all payment operations. Here are the main methods available:</p>
+<h3 id="core-methods">Core Methods<a class="headerlink" href="#core-methods" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>send_payment(transaction)</code></td>
+<td>Send a payment transaction</td>
+<td><code>PaymentResponse</code></td>
+</tr>
+<tr>
+<td><code>check_status(transaction_id)</code></td>
+<td>Check transaction status</td>
+<td><code>TransactionStatus</code></td>
+</tr>
+<tr>
+<td><code>validate_webhook(payload, headers)</code></td>
+<td>Validate webhook signature</td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>parse_webhook(payload, headers)</code></td>
+<td>Parse webhook into WebhookEvent</td>
+<td><code>WebhookEvent</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note</strong>: <code>cancel_transaction()</code> and <code>refund()</code> are not supported by FedaPay. See <a href="#4-fedapay-limitations">FedaPay Limitations</a> for alternatives.</p>
+</blockquote>
+<h3 id="configuration-methods">Configuration Methods<a class="headerlink" href="#configuration-methods" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>from_env(env_file)</code></td>
+<td>Initialize from environment variables</td>
+<td><code>EasySwitch</code></td>
+</tr>
+<tr>
+<td><code>from_json(json_file)</code></td>
+<td>Initialize from JSON file</td>
+<td><code>EasySwitch</code></td>
+</tr>
+<tr>
+<td><code>from_yaml(yaml_file)</code></td>
+<td>Initialize from YAML file</td>
+<td><code>EasySwitch</code></td>
+</tr>
+<tr>
+<td><code>from_dict(config_dict)</code></td>
+<td>Initialize from Python dictionary</td>
+<td><code>EasySwitch</code></td>
+</tr>
+<tr>
+<td><code>from_multi_sources(**sources)</code></td>
+<td>Initialize from multiple sources</td>
+<td><code>EasySwitch</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="api-methods">API Methods<a class="headerlink" href="#api-methods" title="Permanent link">&para;</a></h2>
+<h3 id="1-create-payment">1. Create Payment<a class="headerlink" href="#1-create-payment" title="Permanent link">&para;</a></h3>
+<p>Initiate a payment transaction using EasySwitch's <code>TransactionDetail</code> class and <code>send_payment</code> method.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a TransactionDetail object</span>
+<span class="n">transaction</span> <span class="o">=</span> <span class="n">TransactionDetail</span><span class="p">(</span>
+    <span class="n">transaction_id</span><span class="o">=</span><span class="s2">&quot;TXN-123456&quot;</span><span class="p">,</span>  <span class="c1"># Unique ID generated by your system</span>
+    <span class="n">provider</span><span class="o">=</span><span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">,</span>
+    <span class="n">status</span><span class="o">=</span><span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span>
+    <span class="n">amount</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>  <span class="c1"># Amount in cents (10 XOF)</span>
+    <span class="n">currency</span><span class="o">=</span><span class="n">Currency</span><span class="o">.</span><span class="n">XOF</span><span class="p">,</span>
+    <span class="n">transaction_type</span><span class="o">=</span><span class="n">TransactionType</span><span class="o">.</span><span class="n">PAYMENT</span><span class="p">,</span>
+    <span class="n">customer</span><span class="o">=</span><span class="n">CustomerInfo</span><span class="p">(</span>
+        <span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span>
+        <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span>
+        <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john.doe@email.com&quot;</span><span class="p">,</span> <span class="c1"># FedaPay doesn&#39;t support many customer with same email</span>
+        <span class="n">phone_number</span><span class="o">=</span><span class="s2">&quot;+22990123456&quot;</span>
+    <span class="p">),</span>
+    <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Product XYZ Purchase&quot;</span><span class="p">,</span>
+    <span class="n">callback_url</span><span class="o">=</span><span class="s2">&quot;https://your-site.com/webhook/fedapay&quot;</span><span class="p">,</span>
+    <span class="n">return_url</span><span class="o">=</span><span class="s2">&quot;https://your-site.com/success&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;order_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ORD-12345&quot;</span>  <span class="c1"># Optional business identifier</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Send payment using EasySwitch</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">send_payment</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
+
+<span class="c1"># Check response properties</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Local Transaction ID: </span><span class="si">{</span><span class="n">transaction</span><span class="o">.</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># Your internal ID</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FedaPay Transaction ID: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># ID generated by FedaPay</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Payment URL: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">payment_link</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is Successful: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">is_successful</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is Pending: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">is_pending</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Response Object (PaymentResponse):</strong>
+<div class="highlight"><pre><span></span><code><span class="n">PaymentResponse</span><span class="p">(</span>
+    <span class="n">transaction_id</span><span class="o">=</span><span class="s2">&quot;txn_1234567890&quot;</span><span class="p">,</span>   <span class="c1"># FedaPay transaction ID (not your local one)</span>
+    <span class="n">provider</span><span class="o">=</span><span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">,</span>
+    <span class="n">status</span><span class="o">=</span><span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span>
+    <span class="n">amount</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>
+    <span class="n">currency</span><span class="o">=</span><span class="n">Currency</span><span class="o">.</span><span class="n">XOF</span><span class="p">,</span>
+    <span class="n">payment_link</span><span class="o">=</span><span class="s2">&quot;https://checkout.fedapay.com/...&quot;</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="n">customer</span><span class="o">=</span><span class="n">CustomerInfo</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+    <span class="n">raw_response</span><span class="o">=</span><span class="p">{</span><span class="o">...</span><span class="p">}</span>  <span class="c1"># Raw FedaPay response</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p>⚠️ <strong>Important Notes</strong></p>
+<ul>
+<li><code>transaction_id</code> in <strong>EasySwitch</strong> = your own internal identifier (must be unique in your system).  </li>
+<li><code>transaction_id</code> in the <strong>FedaPay response</strong> = the ID generated by FedaPay’s platform.  </li>
+<li>You can use <code>metadata</code> to store business identifiers (<code>internal_transaction_id</code>, <code>order_id</code>, <code>invoice_id</code>, etc.), but be aware that <strong>metadata values may appear on customer-facing invoices generated by FedaPay</strong>.</li>
+</ul>
+<hr />
+<p>🔄 <strong>ID Mapping Overview</strong></p>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Field Name</th>
+<th>Who Generates It?</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EasySwitch (your system)</td>
+<td><code>transaction_id</code></td>
+<td>You</td>
+<td>Internal reference to track the transaction in your own DB.</td>
+</tr>
+<tr>
+<td>FedaPay</td>
+<td><code>transaction_id</code></td>
+<td>FedaPay</td>
+<td>Unique identifier in FedaPay’s system (returned after init).</td>
+</tr>
+<tr>
+<td>Metadata</td>
+<td>e.g. <code>order_id</code></td>
+<td>You</td>
+<td>Business-specific ID (e.g. Order/Invoice). <em>Visible on customer invoices.</em></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>✅ <strong>Best Practice</strong></p>
+<ul>
+<li>Always generate a unique <code>transaction_id</code> in your system.  </li>
+<li>Store <strong>both IDs</strong> (your own + FedaPay’s) for reconciliation.  </li>
+<li>Use <code>metadata</code> for cross-referencing orders, but <strong>avoid sensitive info</strong> since it may be shown to the customer.  </li>
+</ul>
+<h3 id="2-check-payment-status">2. Check Payment Status<a class="headerlink" href="#2-check-payment-status" title="Permanent link">&para;</a></h3>
+<p>Retrieve the current status of a payment transaction using EasySwitch's <code>check_status</code> method.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check transaction status</span>
+<span class="n">transaction_id</span> <span class="o">=</span> <span class="s2">&quot;txn_1234567890&quot;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">check_status</span><span class="p">(</span><span class="n">transaction_id</span><span class="p">)</span>
+
+<span class="n">status</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status value: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Check specific status types</span>
+<span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">SUCCESSFUL</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Payment completed successfully!&quot;</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Payment is still processing...&quot;</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">status</span> <span class="o">==</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Payment failed&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Response Object (TransactionStatusResponse):</strong>
+<div class="highlight"><pre><span></span><code><span class="n">TransactionStatusResponse</span><span class="p">(</span>
+    <span class="n">transaction_id</span><span class="o">=</span><span class="s2">&quot;txn_1234567890&quot;</span><span class="p">,</span>   <span class="c1"># FedaPay transaction ID (not your local one)</span>
+    <span class="n">provider</span><span class="o">=</span><span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">,</span>
+    <span class="n">status</span><span class="o">=</span><span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span>
+    <span class="n">amount</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="o">...</span><span class="p">}</span>  <span class="c1"># Raw FedaPay&#39;s transaction data</span>
+<span class="p">)</span>
+</code></pre></div></p>
+<p><strong>Available TransactionStatus Values:</strong>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TransactionStatus</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">PENDING</span> <span class="o">=</span> <span class="s2">&quot;pending&quot;</span>
+    <span class="n">SUCCESSFUL</span> <span class="o">=</span> <span class="s2">&quot;successful&quot;</span>
+    <span class="n">FAILED</span> <span class="o">=</span> <span class="s2">&quot;failed&quot;</span>
+    <span class="n">ERROR</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
+    <span class="n">CANCELLED</span> <span class="o">=</span> <span class="s2">&quot;cancelled&quot;</span>
+    <span class="n">REFUSED</span> <span class="o">=</span> <span class="s2">&quot;refused&quot;</span>
+    <span class="n">DECLINED</span> <span class="o">=</span> <span class="s2">&quot;declined&quot;</span>
+    <span class="n">EXPIRED</span> <span class="o">=</span> <span class="s2">&quot;expired&quot;</span>
+    <span class="n">REFUNDED</span> <span class="o">=</span> <span class="s2">&quot;refunded&quot;</span>
+    <span class="n">PROCESSING</span> <span class="o">=</span> <span class="s2">&quot;processing&quot;</span>
+    <span class="n">INITIATED</span> <span class="o">=</span> <span class="s2">&quot;initiated&quot;</span>
+    <span class="n">UNKNOWN</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+    <span class="n">COMPLETED</span> <span class="o">=</span> <span class="s2">&quot;completed&quot;</span>
+    <span class="n">TRANSFERRED</span> <span class="o">=</span> <span class="s2">&quot;transferred&quot;</span>
+</code></pre></div></p>
+<h3 id="3-fedapay-limitations">3. FedaPay Limitations<a class="headerlink" href="#3-fedapay-limitations" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Important</strong>: FedaPay does not support refunds or transaction cancellation through their API. These operations must be handled manually through the FedaPay dashboard or by contacting their support team.</p>
+</blockquote>
+<h4 id="unsupported-operations">Unsupported Operations<a class="headerlink" href="#unsupported-operations" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>FedaPay Support</th>
+<th>Alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Refunds</strong></td>
+<td>❌ Not supported</td>
+<td>Manual processing via dashboard</td>
+</tr>
+<tr>
+<td><strong>Transaction Cancellation</strong></td>
+<td>❌ Not supported</td>
+<td>Contact FedaPay support</td>
+</tr>
+<tr>
+<td><strong>Partial Refunds</strong></td>
+<td>❌ Not supported</td>
+<td>Manual processing via dashboard</td>
+</tr>
+</tbody>
+</table>
+<h4 id="workarounds">Workarounds<a class="headerlink" href="#workarounds" title="Permanent link">&para;</a></h4>
+<p>For refunds and cancellations, you can:</p>
+<ol>
+<li><strong>Use FedaPay Dashboard</strong>: Log into your FedaPay account and process refunds manually</li>
+<li><strong>Contact Support</strong>: Reach out to FedaPay support for assistance</li>
+<li><strong>Implement Business Logic</strong>: Track refunds in your own system and process them separately</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Example: Track refunds in your system</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">track_refund</span><span class="p">(</span><span class="n">transaction_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Track refund in your system (not processed through FedaPay)&quot;&quot;&quot;</span>
+    <span class="n">refund_record</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;original_transaction_id&quot;</span><span class="p">:</span> <span class="n">transaction_id</span><span class="p">,</span>
+        <span class="s2">&quot;refund_amount&quot;</span><span class="p">:</span> <span class="n">amount</span><span class="p">,</span>
+        <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="n">reason</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;pending_manual_processing&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;fedapay_manual&quot;</span>
+    <span class="p">}</span>
+    <span class="c1"># Save to your database</span>
+    <span class="c1"># Notify customer</span>
+    <span class="c1"># Process through FedaPay dashboard</span>
+    <span class="k">return</span> <span class="n">refund_record</span>
+</code></pre></div>
+<h2 id="webhook-management">Webhook Management<a class="headerlink" href="#webhook-management" title="Permanent link">&para;</a></h2>
+<p>EasySwitch provides built-in webhook validation and parsing methods for FedaPay. This ensures secure and standardized webhook handling across all providers.</p>
+<h3 id="easyswitch-webhook-methods">EasySwitch Webhook Methods<a class="headerlink" href="#easyswitch-webhook-methods" title="Permanent link">&para;</a></h3>
+<p>EasySwitch offers two main webhook methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>validate_webhook(payload, headers)</code></td>
+<td>Validate webhook signature only</td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>parse_webhook(payload, headers)</code></td>
+<td>Parse webhook into WebhookEvent (calls validate_webhook internally)</td>
+<td><code>WebhookEvent</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Important</strong>: <code>parse_webhook()</code> automatically calls <code>validate_webhook()</code> internally, so you don't need to validate separately when using <code>parse_webhook()</code>. Use <code>validate_webhook()</code> only when you need to check signature validity without parsing the webhook data.</p>
+</blockquote>
+<h3 id="webhook-configuration-with-easyswitch">Webhook Configuration with EasySwitch<a class="headerlink" href="#webhook-configuration-with-easyswitch" title="Permanent link">&para;</a></h3>
+<p>Set up your webhook endpoint using EasySwitch's built-in methods:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">easyswitch</span><span class="w"> </span><span class="kn">import</span> <span class="n">EasySwitch</span><span class="p">,</span> <span class="n">Provider</span><span class="p">,</span> <span class="n">WebhookEvent</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Initialize EasySwitch client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>  <span class="c1"># or your preferred config method</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook/fedapay&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_fedapay_webhook</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Get webhook data</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+
+        <span class="c1"># Parse webhook using EasySwitch (automatically validates signature)</span>
+        <span class="n">webhook_event</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">parse_webhook</span><span class="p">(</span>
+            <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Process webhook event</span>
+        <span class="n">process_webhook_event</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;success&#39;</span><span class="p">})</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Webhook processing error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Processing failed&#39;</span><span class="p">}),</span> <span class="mi">500</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">process_webhook_event</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">:</span> <span class="n">WebhookEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process webhook event using EasySwitch WebhookEvent object&quot;&quot;&quot;</span>
+
+    <span class="c1"># Access standardized webhook data</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">webhook_event</span><span class="o">.</span><span class="n">event_type</span>
+    <span class="n">transaction_id</span> <span class="o">=</span> <span class="n">webhook_event</span><span class="o">.</span><span class="n">transaction_id</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">webhook_event</span><span class="o">.</span><span class="n">status</span>
+    <span class="n">amount</span> <span class="o">=</span> <span class="n">webhook_event</span><span class="o">.</span><span class="n">amount</span>
+    <span class="n">currency</span> <span class="o">=</span> <span class="n">webhook_event</span><span class="o">.</span><span class="n">currency</span>
+    <span class="n">created_at</span> <span class="o">=</span> <span class="n">webhook_event</span><span class="o">.</span><span class="n">created_at</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Webhook Event: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transaction ID: </span><span class="si">{</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Amount: </span><span class="si">{</span><span class="n">amount</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">currency</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Handle different event types</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;transaction.created&quot;</span><span class="p">:</span>
+        <span class="n">handle_transaction_created</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;transaction.updated&quot;</span><span class="p">:</span>
+        <span class="n">handle_transaction_updated</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;transaction.paid&quot;</span><span class="p">:</span>
+        <span class="n">handle_transaction_paid</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;transaction.canceled&quot;</span><span class="p">:</span>
+        <span class="n">handle_transaction_canceled</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unhandled event type: </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_transaction_created</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">:</span> <span class="n">WebhookEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle transaction created event&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New transaction created: </span><span class="si">{</span><span class="n">webhook_event</span><span class="o">.</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Update your database</span>
+    <span class="c1"># Send confirmation email</span>
+    <span class="c1"># Update order status</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_transaction_updated</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">:</span> <span class="n">WebhookEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle transaction updated event&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transaction updated: </span><span class="si">{</span><span class="n">webhook_event</span><span class="o">.</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Check status and update accordingly</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_transaction_paid</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">:</span> <span class="n">WebhookEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle transaction paid event&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transaction paid: </span><span class="si">{</span><span class="n">webhook_event</span><span class="o">.</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Process successful payment</span>
+    <span class="c1"># Update order status</span>
+    <span class="c1"># Send confirmation</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_transaction_canceled</span><span class="p">(</span><span class="n">webhook_event</span><span class="p">:</span> <span class="n">WebhookEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle transaction canceled event&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transaction canceled: </span><span class="si">{</span><span class="n">webhook_event</span><span class="o">.</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Handle cancellation</span>
+    <span class="c1"># Update order status</span>
+    <span class="c1"># Notify customer</span>
+</code></pre></div>
+<h3 id="webhook-events">Webhook Events<a class="headerlink" href="#webhook-events" title="Permanent link">&para;</a></h3>
+<p>FedaPay sends the following webhook events that are automatically parsed by EasySwitch:</p>
+<table>
+<thead>
+<tr>
+<th>Event Type</th>
+<th>Description</th>
+<th>When It's Sent</th>
+<th>EasySwitch Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transaction.created</code></td>
+<td>Transaction created</td>
+<td>When payment is initiated</td>
+<td><code>PENDING</code></td>
+</tr>
+<tr>
+<td><code>transaction.updated</code></td>
+<td>Transaction updated</td>
+<td>When status changes</td>
+<td>Various</td>
+</tr>
+<tr>
+<td><code>transaction.paid</code></td>
+<td>Payment completed</td>
+<td>When customer completes payment</td>
+<td><code>SUCCESSFUL</code></td>
+</tr>
+<tr>
+<td><code>transaction.canceled</code></td>
+<td>Payment canceled</td>
+<td>When customer cancels payment</td>
+<td><code>CANCELLED</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="webhookevent-object">WebhookEvent Object<a class="headerlink" href="#webhookevent-object" title="Permanent link">&para;</a></h3>
+<p>EasySwitch's <code>WebhookEvent</code> provides standardized access to webhook data:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WebhookEvent</span><span class="p">:</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span>              <span class="c1"># e.g., &quot;transaction.paid&quot;</span>
+    <span class="n">provider</span><span class="p">:</span> <span class="nb">str</span>                <span class="c1"># &quot;fedapay&quot;</span>
+    <span class="n">transaction_id</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># Transaction ID</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">TransactionStatus</span>    <span class="c1"># Normalized status</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span>                <span class="c1"># Transaction amount</span>
+    <span class="n">currency</span><span class="p">:</span> <span class="n">Currency</span>           <span class="c1"># Currency (XOF)</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span>         <span class="c1"># Event timestamp</span>
+    <span class="n">raw_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>     <span class="c1"># Original webhook payload</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>     <span class="c1"># Additional metadata</span>
+</code></pre></div>
+<h3 id="webhook-security">Webhook Security<a class="headerlink" href="#webhook-security" title="Permanent link">&para;</a></h3>
+<p>EasySwitch automatically handles webhook signature validation using FedaPay's signature format:</p>
+<ul>
+<li><strong>Signature Header</strong>: <code>X-Fedapay-Signature</code></li>
+<li><strong>Format</strong>: <code>t=&lt;timestamp&gt;,s=&lt;signature&gt;</code></li>
+<li><strong>Algorithm</strong>: HMAC-SHA256</li>
+<li><strong>Validation</strong>: Automatic via <code>client.parse_webhook()</code> (calls <code>validate_webhook()</code> internally)</li>
+</ul>
+<h3 id="when-to-use-each-method">When to Use Each Method<a class="headerlink" href="#when-to-use-each-method" title="Permanent link">&para;</a></h3>
+<p><strong>Use <code>parse_webhook()</code> when:</strong>
+- You want to process the webhook data
+- You need the parsed <code>WebhookEvent</code> object
+- You want automatic signature validation</p>
+<p><strong>Use <code>validate_webhook()</code> when:</strong>
+- You only need to check signature validity
+- You want to validate before processing
+- You're implementing custom webhook handling logic</p>
+<h3 id="advanced-webhook-management">Advanced Webhook Management<a class="headerlink" href="#advanced-webhook-management" title="Permanent link">&para;</a></h3>
+<p>EasySwitch also provides methods to manage webhooks through the FedaPay API:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="c1"># Get all webhooks</span>
+<span class="n">FedaPay</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">_get_integrator</span><span class="p">(</span><span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">)</span>
+<span class="n">all_webhooks_response</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">FedaPay</span><span class="o">.</span><span class="n">get_all_webhooks</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Webhooks: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">webhooks_response</span><span class="o">.</span><span class="n">webhooks</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get specific webhook details</span>
+<span class="n">webhook_detail</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">FedaPay</span><span class="o">.</span><span class="n">get_webhook_detail</span><span class="p">(</span><span class="s2">&quot;webhook_id&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Webhook URL: </span><span class="si">{</span><span class="n">webhook_detail</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Webhook enabled: </span><span class="si">{</span><span class="n">webhook_detail</span><span class="o">.</span><span class="n">enabled</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="easyswitch-data-types">EasySwitch Data Types<a class="headerlink" href="#easyswitch-data-types" title="Permanent link">&para;</a></h2>
+<h3 id="transactiondetail-class">TransactionDetail Class<a class="headerlink" href="#transactiondetail-class" title="Permanent link">&para;</a></h3>
+<p>The <code>TransactionDetail</code> class is the core data structure for all payment operations in EasySwitch:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TransactionDetail</span><span class="p">:</span>
+    <span class="n">transaction_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">provider</span><span class="p">:</span> <span class="n">Provider</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">currency</span><span class="p">:</span> <span class="n">Currency</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">TransactionStatus</span> <span class="o">=</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span>
+    <span class="n">transaction_type</span><span class="p">:</span> <span class="n">TransactionType</span> <span class="o">=</span> <span class="n">TransactionType</span><span class="o">.</span><span class="n">PAYMENT</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>
+    <span class="n">updated_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">completed_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">customer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CustomerInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">reference</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">reason</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">callback_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">return_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">raw_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="paymentresponse-class">PaymentResponse Class<a class="headerlink" href="#paymentresponse-class" title="Permanent link">&para;</a></h3>
+<p>The <code>PaymentResponse</code> class provides standardized response data with helpful properties:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PaymentResponse</span><span class="p">:</span>
+    <span class="n">transaction_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">provider</span><span class="p">:</span> <span class="n">Provider</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">TransactionStatus</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">currency</span><span class="p">:</span> <span class="n">Currency</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">expires_at</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">reference</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">payment_link</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">transaction_token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">customer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CustomerInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">raw_response</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_successful</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the transaction was successful.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">SUCCESSFUL</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_pending</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the transaction is pending.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span>
+            <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PROCESSING</span><span class="p">,</span>
+            <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">INITIATED</span>
+        <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_failed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the transaction failed.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">FAILED</span><span class="p">,</span>
+            <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">CANCELLED</span><span class="p">,</span>
+            <span class="n">TransactionStatus</span><span class="o">.</span><span class="n">EXPIRED</span>
+        <span class="p">]</span>
+</code></pre></div>
+<h3 id="customerinfo-class">CustomerInfo Class<a class="headerlink" href="#customerinfo-class" title="Permanent link">&para;</a></h3>
+<p>The <code>CustomerInfo</code> class standardizes customer data across all providers:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomerInfo</span><span class="p">:</span>
+    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">phone_number</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="transaction-status-mapping">Transaction Status Mapping<a class="headerlink" href="#transaction-status-mapping" title="Permanent link">&para;</a></h2>
+<p>EasySwitch standardizes transaction statuses across all providers. Here's how FedaPay statuses map to EasySwitch:</p>
+<table>
+<thead>
+<tr>
+<th>FedaPay Status</th>
+<th>EasySwitch Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pending</code></td>
+<td><code>PENDING</code></td>
+<td>Transaction is being processed</td>
+</tr>
+<tr>
+<td><code>approved</code></td>
+<td><code>SUCCESSFUL</code></td>
+<td>Payment completed successfully</td>
+</tr>
+<tr>
+<td><code>declined</code></td>
+<td><code>FAILED</code></td>
+<td>Payment was declined</td>
+</tr>
+<tr>
+<td><code>canceled</code></td>
+<td><code>CANCELLED</code></td>
+<td>Payment was canceled by user</td>
+</tr>
+<tr>
+<td><code>refunded</code></td>
+<td><code>REFUNDED</code></td>
+<td>Payment was refunded</td>
+</tr>
+</tbody>
+</table>
+<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<p>Proper error handling is crucial for a robust payment integration. EasySwitch provides specific exception types for common error scenarios, but note that this list is not exhaustive — additional exceptions may occur depending on your configuration, aggregator behavior, or network conditions.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">easyswitch.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PaymentError</span><span class="p">,</span>
+    <span class="n">NetworkError</span><span class="p">,</span>
+    <span class="n">AuthenticationError</span><span class="p">,</span>
+    <span class="n">ValidationError</span><span class="p">,</span>
+    <span class="n">ConfigurationError</span><span class="p">,</span>
+    <span class="n">InvalidRequestError</span>
+<span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">process_payment_safely</span><span class="p">(</span><span class="n">transaction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process payment with comprehensive error handling&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">send_payment</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Invalid payment data</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Validation error&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">except</span> <span class="n">AuthenticationError</span><span class="p">:</span>
+        <span class="c1"># API key issues</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Authentication failed&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Please check your API configuration&#39;</span>
+        <span class="p">}</span>
+
+    <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+        <span class="c1"># Configuration issues</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Configuration error&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Please check your SDK configuration&#39;</span>
+        <span class="p">}</span>
+
+    <span class="k">except</span> <span class="n">NetworkError</span><span class="p">:</span>
+        <span class="c1"># Network connectivity issues</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Network error&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;Please check your internet connection and try again&#39;</span>
+        <span class="p">}</span>
+
+    <span class="k">except</span> <span class="n">PaymentError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># General payment error</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Payment error&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">except</span> <span class="n">InvalidRequestError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Invalid request format</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid request&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Unexpected error</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Unexpected error&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;An unexpected error occurred. Please try again later.&#39;</span>
+        <span class="p">}</span>
+</code></pre></div>
+<p>🔎 <strong>Note</strong></p>
+<p>The exceptions above cover the most common scenarios.
+Depending on the aggregator and your implementation, additional exceptions may be raised.
+Always include a generic Exception handler to gracefully catch unforeseen errors.
+For production systems, consider logging all errors for easier debugging and monitoring.</p>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<h3 id="test-environment-setup">Test Environment Setup<a class="headerlink" href="#test-environment-setup" title="Permanent link">&para;</a></h3>
+<p>FedaPay provides a sandbox environment for testing your integration. Use test API keys and test phone numbers to simulate different scenarios.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Test configuration</span>
+<span class="n">test_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;providers&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;api_secret&quot;</span><span class="p">:</span> <span class="s2">&quot;sk_sandbox_your_test_key_here&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="s2">&quot;sandbox&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">30</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">test_client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">test_config</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="test-phone-numbers">Test Phone Numbers<a class="headerlink" href="#test-phone-numbers" title="Permanent link">&para;</a></h3>
+<p>Use these test phone numbers to simulate different payment scenarios:</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Test Phone Number</th>
+<th>Expected Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MTN Benin</td>
+<td>+229 66000001</td>
+<td>Success</td>
+</tr>
+<tr>
+<td>MTN Benin</td>
+<td>+229 66000000</td>
+<td>Failure</td>
+</tr>
+<tr>
+<td>Moov Benin</td>
+<td>+229 64000001</td>
+<td>Success</td>
+</tr>
+<tr>
+<td>Moov Benin</td>
+<td>+229 64000000</td>
+<td>Failure</td>
+</tr>
+</tbody>
+</table>
+<h3 id="test-card-numbers">Test Card Numbers<a class="headerlink" href="#test-card-numbers" title="Permanent link">&para;</a></h3>
+<p>For card payment testing, use these test card numbers:</p>
+<table>
+<thead>
+<tr>
+<th>Card Type</th>
+<th>Number</th>
+<th>Expected Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Visa</td>
+<td>4111111111111111</td>
+<td>Success</td>
+</tr>
+<tr>
+<td>Visa</td>
+<td>4242424242424241</td>
+<td>Failure</td>
+</tr>
+<tr>
+<td>MasterCard</td>
+<td>5555555555554444</td>
+<td>Success</td>
+</tr>
+<tr>
+<td>Visa</td>
+<td>4242424242424242</td>
+<td>Failure</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Test Card Details:</strong>
+- <strong>Expiry Date</strong>: Any future date (e.g., 12/25)
+- <strong>CVV</strong>: Any 3-digit number (e.g., 123)
+- <strong>Name</strong>: Any name</p>
+<blockquote>
+<p><strong>Note</strong>: These test numbers are provided by FedaPay for sandbox testing only. Never use them in production.</p>
+</blockquote>
+<h3 id="complete-integration-example">Complete Integration Example<a class="headerlink" href="#complete-integration-example" title="Permanent link">&para;</a></h3>
+<p>Here's a complete example showing how to integrate FedaPay with EasySwitch using proper data types and error handling:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">easyswitch</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EasySwitch</span><span class="p">,</span> <span class="n">Provider</span><span class="p">,</span> <span class="n">TransactionDetail</span><span class="p">,</span> 
+    <span class="n">PaymentResponse</span><span class="p">,</span> <span class="n">TransactionStatus</span><span class="p">,</span> <span class="n">Currency</span><span class="p">,</span> 
+    <span class="n">TransactionType</span><span class="p">,</span> <span class="n">CustomerInfo</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">easyswitch.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PaymentError</span><span class="p">,</span> <span class="n">NetworkError</span><span class="p">,</span> <span class="n">AuthenticationError</span><span class="p">,</span>
+    <span class="n">ValidationError</span><span class="p">,</span> <span class="n">InsufficientFundsError</span>
+<span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="c1"># Configure logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FedaPayIntegration</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_secret</span><span class="p">,</span> <span class="n">environment</span><span class="o">=</span><span class="s2">&quot;sandbox&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize FedaPay integration with EasySwitch&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;default_provider&quot;</span><span class="p">:</span> <span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">,</span>
+            <span class="s2">&quot;providers&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;api_secret&quot;</span><span class="p">:</span> <span class="n">api_secret</span><span class="p">,</span>
+                    <span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="n">environment</span><span class="p">,</span>
+                    <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+                    <span class="s2">&quot;callback_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-domain.com/webhook/fedapay&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;return_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-domain.com/success&quot;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">EasySwitch</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_payment</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">amount</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+        <span class="n">currency</span><span class="p">:</span> <span class="n">Currency</span><span class="p">,</span> 
+        <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+        <span class="n">customer</span><span class="p">:</span> <span class="n">CustomerInfo</span><span class="p">,</span> 
+        <span class="n">order_id</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a payment transaction using EasySwitch&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Create TransactionDetail object</span>
+            <span class="n">transaction</span> <span class="o">=</span> <span class="n">TransactionDetail</span><span class="p">(</span>
+                <span class="n">transaction_id</span><span class="o">=</span><span class="s2">&quot;TXN-123456&quot;</span><span class="p">,</span>  <span class="c1"># Will be generated</span>
+                <span class="n">provider</span><span class="o">=</span><span class="n">Provider</span><span class="o">.</span><span class="n">FEDAPAY</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="n">TransactionStatus</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span>
+                <span class="n">amount</span><span class="o">=</span><span class="n">amount</span><span class="p">,</span>
+                <span class="n">currency</span><span class="o">=</span><span class="n">currency</span><span class="p">,</span>
+                <span class="n">transaction_type</span><span class="o">=</span><span class="n">TransactionType</span><span class="o">.</span><span class="n">PAYMENT</span><span class="p">,</span>
+                <span class="n">customer</span><span class="o">=</span><span class="n">customer</span><span class="p">,</span>
+                <span class="n">reason</span><span class="o">=</span><span class="n">reason</span><span class="p">,</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;order_id&quot;</span><span class="p">:</span> <span class="n">order_id</span>  <span class="c1"># Optional business identifier</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Send payment using EasySwitch</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_payment</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Payment created: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">transaction_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;transaction_id&#39;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">transaction_id</span><span class="p">,</span>
+                <span class="s1">&#39;payment_link&#39;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">payment_link</span><span class="p">,</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">response</span>
+            <span class="p">}</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Payment creation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+                <span class="s1">&#39;error_type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_payment_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check payment status using EasySwitch&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">check_status</span><span class="p">(</span><span class="n">transaction_id</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Payment status: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
+                <span class="s1">&#39;status_value&#39;</span><span class="p">:</span> <span class="n">status</span><span class="o">.</span><span class="n">result</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status check failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+                <span class="s1">&#39;error_type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_webhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle webhook using EasySwitch methods&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Parse webhook (automatically validates signature internally)</span>
+            <span class="n">webhook_event</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">parse_webhook</span><span class="p">(</span>
+                <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
+            <span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Webhook processed: </span><span class="si">{</span><span class="n">webhook_event</span><span class="o">.</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s1">&#39;webhook_event&#39;</span><span class="p">:</span> <span class="n">webhook_event</span>
+            <span class="p">}</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Webhook handling failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+                <span class="s1">&#39;error_type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main function demonstrating FedaPay integration with EasySwitch&quot;&quot;&quot;</span>
+    <span class="c1"># Initialize integration</span>
+    <span class="n">integration</span> <span class="o">=</span> <span class="n">FedaPayIntegration</span><span class="p">(</span>
+        <span class="n">api_secret</span><span class="o">=</span><span class="s2">&quot;sk_sandbox_your_test_key_here&quot;</span><span class="p">,</span>
+        <span class="n">environment</span><span class="o">=</span><span class="s2">&quot;sandbox&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Test customer data</span>
+    <span class="n">customer</span> <span class="o">=</span> <span class="n">CustomerInfo</span><span class="p">(</span>
+        <span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;John&quot;</span><span class="p">,</span>
+        <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span>
+        <span class="n">email</span><span class="o">=</span><span class="s2">&quot;john.doe@example.com&quot;</span><span class="p">,</span>
+        <span class="n">phone_number</span><span class="o">=</span><span class="s2">&quot;+22990000001&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Create payment</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating payment with EasySwitch...&quot;</span><span class="p">)</span>
+    <span class="n">payment_result</span> <span class="o">=</span> <span class="n">integration</span><span class="o">.</span><span class="n">create_payment</span><span class="p">(</span>
+        <span class="n">amount</span><span class="o">=</span><span class="mf">2500.0</span><span class="p">,</span>
+        <span class="n">currency</span><span class="o">=</span><span class="n">Currency</span><span class="o">.</span><span class="n">XOF</span><span class="p">,</span>
+        <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Test Payment with EasySwitch&quot;</span><span class="p">,</span>
+        <span class="n">customer</span><span class="o">=</span><span class="n">customer</span><span class="p">,</span>
+        <span class="n">order_id</span><span class="o">=</span><span class="s2">&quot;ORDER-001&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">payment_result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Payment created successfully!&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transaction ID: </span><span class="si">{</span><span class="n">payment_result</span><span class="p">[</span><span class="s1">&#39;transaction_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Payment Link: </span><span class="si">{</span><span class="n">payment_result</span><span class="p">[</span><span class="s1">&#39;payment_link&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status: </span><span class="si">{</span><span class="n">payment_result</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check if response has helpful properties</span>
+        <span class="k">if</span> <span class="s1">&#39;response&#39;</span> <span class="ow">in</span> <span class="n">payment_result</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">payment_result</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is Successful: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">is_successful</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is Pending: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">is_pending</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Is Failed: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">is_failed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Wait and check status</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Waiting 5 seconds before checking status...&quot;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="n">status_result</span> <span class="o">=</span> <span class="n">integration</span><span class="o">.</span><span class="n">check_payment_status</span><span class="p">(</span><span class="n">payment_result</span><span class="p">[</span><span class="s1">&#39;transaction_id&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">status_result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Payment status: </span><span class="si">{</span><span class="n">status_result</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status value: </span><span class="si">{</span><span class="n">status_result</span><span class="p">[</span><span class="s1">&#39;status_value&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Status check failed: </span><span class="si">{</span><span class="n">status_result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Payment creation failed: </span><span class="si">{</span><span class="n">payment_result</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error type: </span><span class="si">{</span><span class="n">payment_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;error_type&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Unknown&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="testing-checklist">Testing Checklist<a class="headerlink" href="#testing-checklist" title="Permanent link">&para;</a></h3>
+<p>Before going live, ensure you've tested:</p>
+<ul>
+<li>[ ] Payment creation with valid data</li>
+<li>[ ] Payment creation with invalid data</li>
+<li>[ ] Payment status checking</li>
+<li>[ ] Webhook validation and parsing</li>
+<li>[ ] Webhook handling (all event types)</li>
+<li>[ ] Error handling for all exception types</li>
+<li>[ ] Different phone number formats</li>
+<li>[ ] Network timeout scenarios</li>
+<li>[ ] Authentication with invalid keys</li>
+<li>[ ] Webhook signature validation</li>
+<li>[ ] WebhookEvent object parsing</li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>: Refund and cancellation testing should be done manually through the FedaPay dashboard as these operations are not supported via API.</p>
+</blockquote>
+<h2 id="limits-considerations">Limits &amp; Considerations<a class="headerlink" href="#limits-considerations" title="Permanent link">&para;</a></h2>
+<h3 id="transaction-limits">Transaction Limits<a class="headerlink" href="#transaction-limits" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Operator</th>
+<th>Minimum</th>
+<th>Maximum</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Benin</td>
+<td>MTN</td>
+<td>100 XOF</td>
+<td>500,000 XOF</td>
+</tr>
+<tr>
+<td>Benin</td>
+<td>Moov</td>
+<td>100 XOF</td>
+<td>300,000 XOF</td>
+</tr>
+<tr>
+<td>Côte d'Ivoire</td>
+<td>Orange</td>
+<td>100 XOF</td>
+<td>1,000,000 XOF</td>
+</tr>
+<tr>
+<td>Côte d'Ivoire</td>
+<td>MTN</td>
+<td>100 XOF</td>
+<td>500,000 XOF</td>
+</tr>
+<tr>
+<td>Togo</td>
+<td>Moov</td>
+<td>100 XOF</td>
+<td>300,000 XOF</td>
+</tr>
+<tr>
+<td>Senegal</td>
+<td>Orange</td>
+<td>100 XOF</td>
+<td>500,000 XOF</td>
+</tr>
+<tr>
+<td>Mali</td>
+<td>Orange</td>
+<td>100 XOF</td>
+<td>500,000 XOF</td>
+</tr>
+<tr>
+<td>Burkina Faso</td>
+<td>Orange</td>
+<td>100 XOF</td>
+<td>500,000 XOF</td>
+</tr>
+</tbody>
+</table>
+<h3 id="transaction-fees">Transaction Fees<a class="headerlink" href="#transaction-fees" title="Permanent link">&para;</a></h3>
+<p>Transaction fees vary by operator and amount:</p>
+<ul>
+<li><strong>Mobile Money</strong>: Generally 1-3% of transaction amount</li>
+<li><strong>Card Payments</strong>: 2.9% + fixed fee</li>
+<li><strong>International Cards</strong>: Additional 1% surcharge</li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>: Fees are subject to change. Check the <a href="https://fedapay.com/pricing">FedaPay pricing page</a> for current rates.</p>
+</blockquote>
+<h3 id="processing-times">Processing Times<a class="headerlink" href="#processing-times" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Processing Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mobile Money Payments</strong></td>
+<td>5-30 seconds</td>
+</tr>
+<tr>
+<td><strong>Card Payments</strong></td>
+<td>1-3 minutes</td>
+</tr>
+<tr>
+<td><strong>Refunds</strong></td>
+<td>1-3 business days</td>
+</tr>
+<tr>
+<td><strong>Settlements</strong></td>
+<td>2-7 business days (varies by country)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rate-limits">Rate Limits<a class="headerlink" href="#rate-limits" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>API Requests</strong>: 100 requests per minute per API key</li>
+<li><strong>Webhook Retries</strong>: 3 retries with exponential backoff</li>
+<li><strong>Concurrent Transactions</strong>: 10 per customer per minute</li>
+</ul>
+<h2 id="support-resources">Support &amp; Resources<a class="headerlink" href="#support-resources" title="Permanent link">&para;</a></h2>
+<h3 id="official-resources">Official Resources<a class="headerlink" href="#official-resources" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>📚 Documentation</strong>: <a href="https://docs.fedapay.com">docs.fedapay.com</a></li>
+<li><strong>🎛️ Dashboard</strong>: <a href="https://dashboard.fedapay.com">dashboard.fedapay.com</a></li>
+<li><strong>📊 Status Page</strong>: <a href="https://status.fedapay.com">status.fedapay.com</a></li>
+<li><strong>💬 Support</strong>: support@fedapay.com</li>
+</ul>
+<h3 id="community-help">Community &amp; Help<a class="headerlink" href="#community-help" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>GitHub Issues</strong>: Report bugs and request features</li>
+<li><strong>Developer Forum</strong>: Connect with other developers</li>
+<li><strong>API Reference</strong>: Complete API documentation</li>
+<li><strong>SDK Downloads</strong>: Official libraries for multiple languages</li>
+</ul>
+<h3 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Check Documentation</strong>: Most questions are answered in the official docs</li>
+<li><strong>Search Issues</strong>: Look for similar problems in GitHub issues</li>
+<li><strong>Contact Support</strong>: Email support@fedapay.com for technical issues</li>
+<li><strong>Community Forum</strong>: Ask questions in the developer community</li>
+</ol>
+<h3 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Always test in sandbox before going live</li>
+<li>Implement proper error handling and retry logic</li>
+<li>Use webhooks for real-time status updates</li>
+<li>Keep your API keys secure and rotate them regularly</li>
+<li>Monitor your integration with proper logging</li>
+<li>Test with different phone number formats and countries</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/AllDotPy/easyswitch" target="_blank" rel="noopener" title="EasySwitch on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://twitter.com/AllDotPy" target="_blank" rel="noopener" title="EasySwitch on X" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M459.4 151.7c.3 4.5.3 9.1.3 13.6 0 138.7-105.6 298.6-298.6 298.6-59.5 0-114.7-17.2-161.1-47.1 8.4 1 16.6 1.3 25.3 1.3 49.1 0 94.2-16.6 130.3-44.8-46.1-1-84.8-31.2-98.1-72.8 6.5 1 13 1.6 19.8 1.6 9.4 0 18.8-1.3 27.6-3.6-48.1-9.7-84.1-52-84.1-103v-1.3c14 7.8 30.2 12.7 47.4 13.3-28.3-18.8-46.8-51-46.8-87.4 0-19.5 5.2-37.4 14.3-53C87.4 130.8 165 172.4 252.1 176.9c-1.6-7.8-2.6-15.9-2.6-24C249.5 95.1 296.3 48 354.4 48c30.2 0 57.5 12.7 76.7 33.1 23.7-4.5 46.5-13.3 66.6-25.3-7.8 24.4-24.4 44.8-46.1 57.8 21.1-2.3 41.6-8.1 60.4-16.2-14.3 20.8-32.2 39.3-52.6 54.3"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.path", "navigation.indexes", "navigation.top", "navigation.tabs", "navigation.sections", "navigation.tracking", "navigation.prune", "toc.follow", "search.suggest", "search.highlight", "code.copy", "code.annotate", "code.tabs", "code.expand", "content.code.copy", "content.code.select", "content.action.edit", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "1.0.0"}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="../../assets/javascript/msdl.v1.js"></script>
+      
+        <script src="../../assets/javascript/init_kapa_widget.v2.js"></script>
+      
+    
+  </body>
+</html>
