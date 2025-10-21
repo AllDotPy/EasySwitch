@@ -1,0 +1,395 @@
+# Airtel Money Integration with EasySwitch
+
+## Overview
+
+Airtel Money is a leading mobile money service operating across Africa, enabling businesses and individuals to accept mobile payments seamlessly. With extensive reach across multiple African countries, Airtel Money provides a secure and reliable solution for collecting payments via mobile money wallets.
+
+## Prerequisites
+
+To integrate Airtel Money with EasySwitch, you need:
+
+- EasySwitch library is installed. For setup instructions, see [Installation](../getting-started/installation.md).
+- An active Airtel Money merchant account
+- API credentials from Airtel Money:
+  - Client ID
+  - Client Secret
+  - API Key
+- Callback URL configured in your Airtel Money dashboard
+
+## Supported Countries
+
+Airtel Money supports the following countries and currencies:
+
+| Country | Currency | Mobile Money | Card Payments |
+|---------|----------|--------------|---------------|
+| **Uganda** | UGX | ✅ | ❌ |
+| **Tanzania** | TZS | ✅ | ❌ |
+| **Kenya** | KES | ✅ | ❌ |
+| **Rwanda** | RWF | ✅ | ❌ |
+| **Zambia** | ZMW | ✅ | ❌ |
+| **Malawi** | MWK | ✅ | ❌ |
+| **Nigeria** | NGN | ✅ | ❌ |
+| **DR Congo** | CDF | ✅ | ❌ |
+| **West Africa** | XOF | ✅ | ❌ |
+| **Ghana** | GHS | ✅ | ❌ |
+| **Burundi** | BIF | ✅ | ❌ |
+| **Ethiopia** | ETB | ✅ | ❌ |
+| **Botswana** | BWP | ✅ | ❌ |
+| **Zimbabwe** | ZWL | ✅ | ❌ |
+
+## Setup
+
+### Basic Configuration
+
+```python
+from easyswitch import (
+    EasySwitch, 
+    TransactionDetail, 
+    Provider,
+    TransactionStatus, 
+    Currency, 
+    TransactionType, 
+    CustomerInfo
+)
+
+# Prepare Airtel Money configuration
+config = {
+    "debug": True,
+    "default_provider": Provider.AIRTEL_MONEY,
+    "providers": {
+        "AIRTEL_MONEY": {
+            "client_id": "your_airtel_client_id",
+            "client_secret": "your_airtel_client_secret",
+            "api_key": "your_airtel_api_key",
+            "webhook_secret": "your_webhook_secret",  # Optional
+            "callback_url": "https://yourapp.com/webhook",
+            "timeout": 60,  # timeout in seconds for HTTP requests
+            "environment": "sandbox",  # or "production"
+        },
+    }
+}
+        
+# Initialize Airtel Money client
+client = EasySwitch.from_dict(config_dict=config)
+```
+
+### Alternative Configuration Methods
+
+EasySwitch supports multiple configuration methods:
+
+```python
+# 1. From environment variables
+client = EasySwitch.from_env()
+
+# 2. From JSON file
+client = EasySwitch.from_json("config.json")
+
+# 3. From YAML file
+client = EasySwitch.from_yaml("config.yaml")
+
+# 4. From multiple sources (with overrides)
+client = EasySwitch.from_multi_sources(
+    env_file=".env",
+    json_file="overrides.json"
+)
+```
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file or set the following environment variables:
+
+```bash
+# Airtel Money Configuration
+AIRTEL_MONEY_CLIENT_ID=your_client_id_here
+AIRTEL_MONEY_CLIENT_SECRET=your_client_secret_here
+AIRTEL_MONEY_API_KEY=your_api_key_here
+AIRTEL_MONEY_WEBHOOK_SECRET=your_webhook_secret_here
+AIRTEL_MONEY_ENVIRONMENT=sandbox
+AIRTEL_MONEY_CALLBACK_URL=https://yourapp.com/webhook
+```
+
+### Authentication
+
+Airtel Money uses OAuth 2.0 authentication. EasySwitch automatically handles token generation and refresh:
+
+```python
+# Token is automatically obtained and refreshed
+# OAuth flow:
+# 1. Request access token using client credentials
+# 2. Use Bearer token in subsequent requests
+# 3. Auto-refresh before expiry
+```
+
+> **Security Note**: Never expose your client secret or API key in client-side code. Always use environment variables or secure configuration management.
+
+## EasySwitch Methods
+
+EasySwitch provides a unified interface for all payment operations. Here are the main methods available:
+
+### Core Methods
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `send_payment(transaction)` | Send a payment transaction | `PaymentResponse` |
+| `check_status(transaction_id, provider)` | Check transaction status | `TransactionStatus` |
+| `refund(transaction_id, amount)` | Refund a transaction | `PaymentResponse` |
+| `get_transaction_detail(transaction_id)` | Get detailed transaction info | `TransactionDetail` |
+
+### Configuration Methods
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `from_env(env_file)` | Initialize from environment variables | `EasySwitch` |
+| `from_json(json_file)` | Initialize from JSON file | `EasySwitch` |
+| `from_yaml(yaml_file)` | Initialize from YAML file | `EasySwitch` |
+| `from_dict(config_dict)` | Initialize from Python dictionary | `EasySwitch` |
+| `from_multi_sources(**sources)` | Initialize from multiple sources | `EasySwitch` |
+
+## API Methods
+
+### 1. Create Payment
+
+Initiate a payment transaction using EasySwitch's `TransactionDetail` class and `send_payment` method.
+
+```python
+# Create a TransactionDetail object
+transaction = TransactionDetail(
+    transaction_id="transaction1234",  # Unique ID generated by your system
+    provider=Provider.AIRTEL_MONEY,
+    status=TransactionStatus.PENDING,
+    amount=1000,
+    currency=Currency.NGN,
+    transaction_type=TransactionType.PAYMENT,
+    reference="ORDER-12345",
+    customer=CustomerInfo(
+        first_name="John",
+        last_name="Doe",
+        phone_number="+2349012345678",  # Must be valid Airtel Money number
+        country="NG"  # ISO country code
+    ),
+    metadata={
+        "order_id": "ORDER-12345",
+        "description": "Product XYZ Purchase"
+    }
+)
+
+# Send payment using EasySwitch
+response = await client.send_payment(transaction)
+
+# Check response properties
+print(f"Local Transaction ID: {transaction.transaction_id}")  # Your internal ID
+print(f"Airtel Money Transaction ID: {response.transaction_id}")  # ID from Airtel
+print(f"Status: {response.status}")
+print(f"Is Successful: {response.is_successful}")
+print(f"Is Pending: {response.is_pending}")
+```
+
+**Response Object (PaymentResponse):**
+```python
+PaymentResponse(
+    transaction_id='AM_TXN_1234567890',  # Airtel Money transaction ID
+    reference='ORDER-12345',
+    provider='AIRTEL_MONEY',
+    status='pending',
+    amount=1000.0,
+    currency='NGN',
+    payment_link=None,  # Airtel uses USSD/App push notifications
+    transaction_token='AM_TXN_1234567890',
+    metadata={
+        'message': 'Transaction initiated successfully',
+        'msisdn': '2349012345678'
+    },
+    raw_response={...}
+)
+```
+
+⚠️ **Important Notes**
+
+- `transaction_id` in **EasySwitch** = your own internal identifier (must be unique in your system).
+- `transaction_id` in the **Airtel Money response** = the ID generated by Airtel Money's platform.
+- Phone number must be a valid Airtel Money registered number.
+- Payment is initiated via USSD push or app notification to the customer's phone.
+
+---
+
+🔄 **ID Mapping Overview**
+
+| Context | Field Name | Who Generates It? | Purpose |
+|---------|------------|-------------------|---------|
+| EasySwitch (your system) | `transaction_id` | You | Internal reference to track the transaction in your own DB. |
+| Airtel Money | `transaction_id` | Airtel Money | Unique identifier in Airtel Money's system (returned after init). |
+
+---
+
+✅ **Best Practice**
+
+- Always generate a unique `transaction_id` in your system.
+- Store **both IDs** (your own + Airtel Money's) for reconciliation.
+- Validate phone numbers are in E.164 format (e.g., +2349012345678).
+
+### 2. Check Payment Status
+
+Retrieve the current status of a payment transaction using EasySwitch's `check_status` method.
+
+```python
+# Check transaction status using Airtel Money transaction ID
+transaction_id = "AM_TXN_1234567890"
+response = await client.check_status(transaction_id, provider=Provider.AIRTEL_MONEY)
+
+status = response.status
+print(f"Status value: {status}")
+
+# Check specific status types
+if status == TransactionStatus.SUCCESSFUL:
+    print("Payment completed successfully!")
+elif status == TransactionStatus.PENDING:
+    print("Payment is still processing...")
+elif status == TransactionStatus.FAILED:
+    print("Payment failed")
+```
+
+**Response Object (TransactionStatusResponse):**
+```python
+TransactionStatusResponse(
+    transaction_id="AM_TXN_1234567890",  # Airtel Money transaction ID
+    provider=Provider.AIRTEL_MONEY,
+    status=TransactionStatus.SUCCESSFUL,
+    amount=1000.0,
+    data={...}  # Raw Airtel Money transaction data
+)
+```
+
+**Available TransactionStatus Values:**
+```python
+class TransactionStatus(str, Enum):
+    PENDING = "pending"
+    SUCCESSFUL = "successful"
+    FAILED = "failed"
+    ERROR = "error"
+    CANCELLED = "cancelled"
+    REFUSED = "refused"
+    EXPIRED = "expired"
+    PROCESSING = "processing"
+    INITIATED = "initiated"
+    COMPLETED = "completed"
+    REFUNDED = "refunded"
+```
+
+**Airtel Money Status Codes:**
+
+| Airtel Code | EasySwitch Status | Description |
+|-------------|-------------------|-------------|
+| `TS` | SUCCESSFUL | Transaction Successful |
+| `TF` | FAILED | Transaction Failed |
+| `TA` | PENDING | Transaction Ambiguous |
+| `TP` | PENDING | Transaction Pending |
+| `TN` | FAILED | Transaction Not Found |
+| `TR` | REFUNDED | Transaction Refunded |
+| `TC` | CANCELLED | Transaction Cancelled |
+
+### 3. Refund Transaction
+
+Process a refund for a completed transaction.
+
+```python
+# Full refund
+transaction_id = "AM_TXN_1234567890"
+response = await client.refund(
+    transaction_id=transaction_id,
+    provider=Provider.AIRTEL_MONEY
+)
+
+# Partial refund
+response = await client.refund(
+    transaction_id=transaction_id,
+    amount=500.0,  # Refund only 500 instead of full amount
+    provider=Provider.AIRTEL_MONEY
+)
+
+print(f"Refund Status: {response.status}")
+print(f"Refund Amount: {response.amount}")
+print(f"Refund ID: {response.metadata.get('refund_id')}")
+```
+
+**Response Object:**
+```python
+PaymentResponse(
+    transaction_id='AM_TXN_1234567890',
+    reference='refund-AM_TXN_1234567890',
+    provider='AIRTEL_MONEY',
+    status='pending',
+    amount=500.0,
+    currency='NGN',
+    metadata={
+        'message': 'Refund initiated successfully',
+        'refund_id': 'AM_REFUND_9876543210'
+    },
+    raw_response={...}
+)
+```
+
+### 4. Get Transaction Details
+
+Retrieve comprehensive details about a transaction.
+
+```python
+# Get full transaction details
+transaction_id = "AM_TXN_1234567890"
+details = await client.get_transaction_detail(
+    transaction_id=transaction_id,
+    provider=Provider.AIRTEL_MONEY
+)
+
+print(f"Transaction ID: {details.transaction_id}")
+print(f"Amount: {details.amount} {details.currency}")
+print(f"Status: {details.status}")
+print(f"Customer: {details.customer.first_name} {details.customer.last_name}")
+print(f"Phone: {details.customer.phone_number}")
+print(f"Created: {details.created_at}")
+print(f"Completed: {details.completed_at}")
+```
+
+**Response Object (TransactionDetail):**
+```python
+TransactionDetail(
+    transaction_id='AM_TXN_1234567890',
+    provider='AIRTEL_MONEY',
+    amount=1000.0,
+    currency='NGN',
+    status=TransactionStatus.SUCCESSFUL,
+    reference='ORDER-12345',
+    created_at=datetime(...),
+    updated_at=datetime(...),
+    completed_at=datetime(...),
+    customer=CustomerInfo(
+        phone_number='+2349012345678',
+        first_name='John',
+        last_name='Doe',
+        metadata={
+            'country': 'NG',
+            'subscriber_type': 'prepaid'
+        }
+    ),
+    metadata={
+        'status_message': 'Transaction completed successfully',
+        'response_code': '200'
+    },
+    raw_data={...}
+)
+```
+
+### 5. Airtel Money Limitations
+
+> **Important**: Airtel Money does not support transaction cancellation through their API. However, refunds are supported for completed transactions.
+
+#### Supported & Unsupported Operations
+
+| Operation | Airtel Money Support | Alternative |
+|-----------|---------------------|-------------|
+| **Refunds** | ✅ Supported | Use `refund()` method |
+| **Partial Refunds** | ✅ Supported | Specify amount in `refund()` |
+| **Transaction Cancellation** | ❌ Not supported | Contact Airtel Money support |
+| **Transaction Details** | ✅ Supported | Use `get_transaction_detail()` |
+| **Status Check** | ✅ Supported | Use `check_status()` |
