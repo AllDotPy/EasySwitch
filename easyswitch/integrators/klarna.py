@@ -1,12 +1,13 @@
 """
-EasySwitch - Klarna Integrator
+EasySwitch - Klarna Adapter
 """
 
 import hmac
 import hashlib
 import json
+import base64
 from typing import ClassVar, List, Dict, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from easyswitch.adapters.base import IntegratorRegistry, BaseIntegrator
 from easyswitch.types import (
@@ -18,12 +19,12 @@ from easyswitch.types import (
     CustomerInfo,
     TransactionStatus,
 )
-from easyswitch.exceptions import PaymentError, UnsupportedOperationError
+from easyswitch.exceptions import PaymentError
 
 
 @IntegratorRegistry.register()
-class KlarnaIntegrator(BaseIntegrator):
-    """Klarna Payment Integrator for EasySwitch SDK."""
+class KlarnaAdapter(BaseIntegrator):
+    """Klarna Payment Adapter for EasySwitch SDK."""
 
     SANDBOX_URL: str = "https://api.playground.klarna.com"
     PRODUCTION_URL: str = "https://api.klarna.com"
@@ -56,20 +57,22 @@ class KlarnaIntegrator(BaseIntegrator):
     }
 
     def validate_credentials(self) -> bool:
-        """Validate Klarna API credentials."""
-        return bool(self.config.api_key and getattr(self.config, "api_username", None))
+        """Validate Klarna API credentials from extra config."""
+        extra = getattr(self.config, "extra", {}) or {}
+        return bool(extra.get("api_username") and extra.get("api_key"))
 
-    def get_credentials(self):
-        """Return Klarna API credentials."""
+    def get_credentials(self) -> Dict[str, str]:
+        """Return Klarna API credentials from extra config."""
+        extra = getattr(self.config, "extra", {}) or {}
         return {
-            "api_username": getattr(self.config, "api_username", None),
-            "api_key": self.config.api_key,
+            "api_username": extra.get("api_username"),
+            "api_key": extra.get("api_key"),
         }
 
     async def get_headers(self, **kwargs) -> Dict[str, str]:
         """Return authorization headers for Klarna."""
-        credentials = f"{self.config.api_username}:{self.config.api_key}"
-        import base64
+        creds = self.get_credentials()
+        credentials = f"{creds['api_username']}:{creds['api_key']}"
         encoded = base64.b64encode(credentials.encode()).decode()
 
         return {
@@ -89,12 +92,11 @@ class KlarnaIntegrator(BaseIntegrator):
         return mapping.get(status.upper(), TransactionStatus.UNKNOWN)
 
     def validate_webhook(self, raw_body: bytes, headers: Dict[str, str]) -> bool:
-        """Validate Klarna webhook signature (if provided)."""
-        # Klarna allows optional signature validation via HMAC
+        """Validate Klarna webhook signature if webhook_secret is configured."""
         signature = headers.get("klarna-signature")
-        secret = getattr(self.config, "webhook_secret", None)
+        secret = getattr(self.config, "extra", {}).get("webhook_secret")
         if not signature or not secret:
-            return True  # Skip if not configured
+            return True  # Optional verification
 
         computed_sig = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
         return hmac.compare_digest(signature, computed_sig)
@@ -106,19 +108,16 @@ class KlarnaIntegrator(BaseIntegrator):
         if not self.validate_webhook(raw_body, headers):
             raise PaymentError("Invalid Klarna webhook signature")
 
-        event_type = payload.get("event_type", "payment.update")
         order_id = payload.get("order_id")
         status = self.get_normalize_status(payload.get("status", "UNKNOWN"))
-        amount = float(payload.get("amount", 0))
-        currency = payload.get("currency", "EUR")
 
         return WebhookEvent(
-            event_type=event_type,
+            event_type=payload.get("event_type", "payment.update"),
             provider=self.provider_name(),
             transaction_id=order_id,
             status=status,
-            amount=amount,
-            currency=currency,
+            amount=float(payload.get("amount", 0)),
+            currency=payload.get("currency", "EUR"),
             created_at=datetime.utcnow(),
             raw_data=payload,
         )
@@ -126,10 +125,16 @@ class KlarnaIntegrator(BaseIntegrator):
     def format_transaction(self, transaction: TransactionDetail) -> Dict[str, Any]:
         """Convert standardized TransactionDetail into Klarna API payload."""
         self.validate_transaction(transaction)
-
         customer = transaction.customer
-        if not customer.email:
-            raise PaymentError("Email is required for Klarna payment")
+
+        if not customer or not customer.email:
+            raise PaymentError("Customer email is required for Klarna payment")
+
+        callback_url = (
+            transaction.callback_url
+            or getattr(self.config, "callback_url", None)
+            or getattr(self.config.extra, "callback_url", "https://example.com/callback")
+        )
 
         return {
             "purchase_country": getattr(customer, "country", "SE"),
@@ -146,8 +151,8 @@ class KlarnaIntegrator(BaseIntegrator):
                 }
             ],
             "merchant_urls": {
-                "confirmation": transaction.callback_url or "https://example.com/confirm",
-                "notification": transaction.callback_url or "https://example.com/webhook",
+                "confirmation": callback_url,
+                "notification": callback_url,
             },
         }
 
@@ -157,15 +162,15 @@ class KlarnaIntegrator(BaseIntegrator):
         headers = await self.get_headers()
 
         async with self.get_client() as client:
-            response = await client.post("/payments/v1/sessions", json=payload, headers=headers)
-            data = response.json() if hasattr(response, "json") else response.data
+            response = await client.post("/payments/v1/sessions", json_data=payload, headers=headers)
+            data = getattr(response, "json", lambda: response.data)()
 
             if response.status in range(200, 300):
                 return PaymentResponse(
                     transaction_id=data.get("session_id"),
                     reference=transaction.reference,
                     provider=self.provider_name(),
-                    status=TransactionStatus.PENDING.value,
+                    status=TransactionStatus.PENDING,
                     amount=transaction.amount,
                     currency=transaction.currency,
                     payment_link=data.get("redirect_url"),
@@ -185,7 +190,7 @@ class KlarnaIntegrator(BaseIntegrator):
         headers = await self.get_headers()
         async with self.get_client() as client:
             response = await client.get(f"/payments/v1/orders/{order_id}", headers=headers)
-            data = response.json() if hasattr(response, "json") else response.data
+            data = getattr(response, "json", lambda: response.data)()
 
             if response.status in range(200, 300):
                 status = self.get_normalize_status(data.get("status", "UNKNOWN"))
@@ -214,17 +219,17 @@ class KlarnaIntegrator(BaseIntegrator):
         async with self.get_client() as client:
             response = await client.post(
                 f"/payments/v1/orders/{order_id}/refunds",
-                json=refund_data,
+                json_data=refund_data,
                 headers=headers,
             )
-            data = response.json() if hasattr(response, "json") else response.data
+            data = getattr(response, "json", lambda: response.data)()
 
             if response.status in range(200, 300):
                 return PaymentResponse(
                     transaction_id=order_id,
                     reference=f"refund-{order_id}",
                     provider=self.provider_name(),
-                    status=TransactionStatus.REFUNDED.value,
+                    status=TransactionStatus.REFUNDED,
                     amount=amount or float(data.get("refunded_amount", 0)) / 100,
                     currency=data.get("currency", "EUR"),
                     metadata=data,
@@ -237,25 +242,27 @@ class KlarnaIntegrator(BaseIntegrator):
                 raw_response=data,
             )
 
-    async def cancel_transaction(self, transaction_id: str) -> None:
+    async def cancel_transaction(self, transaction_id: str) -> bool:
         """Cancel a Klarna order."""
         headers = await self.get_headers()
         async with self.get_client() as client:
             response = await client.post(
                 f"/payments/v1/orders/{transaction_id}/cancel", headers=headers
             )
-            if response.status not in range(200, 300):
-                raise PaymentError(
-                    message=f"Cancellation failed ({response.status})",
-                    status_code=response.status,
-                )
+            if response.status in range(200, 300):
+                return True
+
+            raise PaymentError(
+                message=f"Cancellation failed ({response.status})",
+                status_code=response.status,
+            )
 
     async def get_transaction_detail(self, transaction_id: str) -> TransactionDetail:
         """Retrieve Klarna order details."""
         headers = await self.get_headers()
         async with self.get_client() as client:
             response = await client.get(f"/payments/v1/orders/{transaction_id}", headers=headers)
-            data = response.json() if hasattr(response, "json") else response.data
+            data = getattr(response, "json", lambda: response.data)()
 
             if response.status in range(200, 300):
                 customer_info = data.get("billing_address", {})
@@ -265,7 +272,6 @@ class KlarnaIntegrator(BaseIntegrator):
                     first_name=customer_info.get("given_name"),
                     last_name=customer_info.get("family_name"),
                 )
-
                 status = self.get_normalize_status(data.get("status", "UNKNOWN"))
 
                 return TransactionDetail(
