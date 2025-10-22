@@ -418,9 +418,10 @@ MIT License.
 
 ---
 
-## **📞 Support**  
+## **Community & Support 💬**  
 
 For any question, please open a **Github issue**. 
+- [Discord Community](https://discord.gg/Q8ZFsrkt) 💬
 
 ---
 
