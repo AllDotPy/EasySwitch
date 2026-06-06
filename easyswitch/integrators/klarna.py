@@ -9,7 +9,7 @@ import base64
 from typing import ClassVar, List, Dict, Optional, Any
 from datetime import datetime
 
-from easyswitch.adapters.base import IntegratorRegistry, BaseIntegrator
+from easyswitch.adapters.base import AdaptersRegistry, BaseAdapter
 from easyswitch.types import (
     Currency,
     PaymentResponse,
@@ -22,8 +22,8 @@ from easyswitch.types import (
 from easyswitch.exceptions import PaymentError
 
 
-@IntegratorRegistry.register()
-class KlarnaAdapter(BaseIntegrator):
+@AdaptersRegistry.register()
+class KlarnaAdapter(BaseAdapter):
     """Klarna Payment Adapter for EasySwitch SDK."""
 
     SANDBOX_URL: str = "https://api.playground.klarna.com"
@@ -69,7 +69,7 @@ class KlarnaAdapter(BaseIntegrator):
             "api_key": extra.get("api_key"),
         }
 
-    async def get_headers(self, **kwargs) -> Dict[str, str]:
+    def get_headers(self, **kwargs) -> Dict[str, str]:
         """Return authorization headers for Klarna."""
         creds = self.get_credentials()
         credentials = f"{creds['api_username']}:{creds['api_key']}"
@@ -159,7 +159,7 @@ class KlarnaAdapter(BaseIntegrator):
     async def send_payment(self, transaction: TransactionDetail) -> PaymentResponse:
         """Initiate a Klarna payment session."""
         payload = self.format_transaction(transaction)
-        headers = await self.get_headers()
+        headers = self.get_headers()
 
         async with self.get_client() as client:
             response = await client.post("/payments/v1/sessions", json_data=payload, headers=headers)
@@ -187,7 +187,7 @@ class KlarnaAdapter(BaseIntegrator):
 
     async def check_status(self, order_id: str) -> TransactionStatusResponse:
         """Check Klarna order status."""
-        headers = await self.get_headers()
+        headers = self.get_headers()
         async with self.get_client() as client:
             response = await client.get(f"/payments/v1/orders/{order_id}", headers=headers)
             data = getattr(response, "json", lambda: response.data)()
@@ -210,7 +210,7 @@ class KlarnaAdapter(BaseIntegrator):
 
     async def refund(self, order_id: str, amount: Optional[float] = None) -> PaymentResponse:
         """Issue refund through Klarna."""
-        headers = await self.get_headers()
+        headers = self.get_headers()
         refund_data = {
             "refunded_amount": int((amount or 0) * 100),
             "description": "Refund via EasySwitch",
@@ -244,7 +244,7 @@ class KlarnaAdapter(BaseIntegrator):
 
     async def cancel_transaction(self, transaction_id: str) -> bool:
         """Cancel a Klarna order."""
-        headers = await self.get_headers()
+        headers = self.get_headers()
         async with self.get_client() as client:
             response = await client.post(
                 f"/payments/v1/orders/{transaction_id}/cancel", headers=headers
@@ -259,7 +259,7 @@ class KlarnaAdapter(BaseIntegrator):
 
     async def get_transaction_detail(self, transaction_id: str) -> TransactionDetail:
         """Retrieve Klarna order details."""
-        headers = await self.get_headers()
+        headers = self.get_headers()
         async with self.get_client() as client:
             response = await client.get(f"/payments/v1/orders/{transaction_id}", headers=headers)
             data = getattr(response, "json", lambda: response.data)()

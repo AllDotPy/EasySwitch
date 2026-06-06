@@ -37,6 +37,10 @@ class Currency(str, Enum):
     CDF = "CDF"  # Congolese Franc
     GNF = "GNF"  # Guinean Franc
     KMF = "KMF"  # Comorian Franc
+    GBP = "GBP"  # British Pound Sterling
+    SEK = "SEK"  # Swedish Krona
+    NOK = "NOK"  # Norwegian Krone
+    DKK = "DKK"  # Danish Krone
 
 
 ####

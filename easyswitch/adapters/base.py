@@ -163,7 +163,7 @@ class BaseAdapter(abc.ABC):
                     'User-Agent': USER_AGENT
                 },
                 timeout = self.config.timeout,
-                debug = self.context.get('debug_mode') or True
+                debug = (self.context or {}).get('debug_mode') or True
             )
             
         # Return the HTTP client

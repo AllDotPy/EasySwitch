@@ -3,10 +3,12 @@ import hmac
 import hashlib
 import json
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
-from easyswitch.integrators.klarna import KlarnaIntegrator
+from easyswitch.integrators.klarna import KlarnaAdapter
+from easyswitch.conf import ProviderConfig
+
 from easyswitch.types import (
     Currency,
     CustomerInfo,
@@ -23,18 +25,21 @@ from easyswitch.exceptions import PaymentError
 @pytest.fixture
 def klarna_config():
     """Provides default Klarna config for sandbox testing."""
-    return {
+    return ProviderConfig(
+    api_key="test_key",          # ProviderConfig's own field
+    environment="sandbox",
+    extra={
         "api_username": "test_user",
         "api_key": "test_key",
-        "environment": "sandbox",
         "webhook_secret": "secret123",
     }
+    )
 
 
 @pytest.fixture
 def klarna_integrator(klarna_config):
-    """Instantiate KlarnaIntegrator with test configuration."""
-    return KlarnaIntegrator(klarna_config)
+    """Instantiate KlarnaAdapter with test configuration."""
+    return KlarnaAdapter(klarna_config)
 
 
 @pytest.fixture
@@ -42,11 +47,13 @@ def sample_transaction():
     """A sample transaction object for Klarna testing."""
     return TransactionDetail(
         transaction_id="txn_123",
+        provider="klarna",
         reference="order_456",
         amount=100.0,
         currency=Currency.EUR,
         customer=CustomerInfo(
             email="user@example.com",
+            phone_number="+46700000000",
             first_name="Jane",
             last_name="Doe",
             country="SE",
@@ -63,7 +70,7 @@ def test_validate_credentials(klarna_integrator):
     """Validate that credentials check works properly."""
     assert klarna_integrator.validate_credentials() is True
 
-    klarna_integrator.config.api_username = None
+    klarna_integrator.config.extra["api_username"] = None
     assert klarna_integrator.validate_credentials() is False
 
 
@@ -77,7 +84,7 @@ def test_get_credentials(klarna_integrator):
 @pytest.mark.asyncio
 async def test_get_headers(klarna_integrator):
     """Ensure headers include proper Base64 encoded auth."""
-    headers = await klarna_integrator.get_headers()
+    headers = klarna_integrator.get_headers()
     assert "Authorization" in headers
     decoded = base64.b64decode(headers["Authorization"].split()[1]).decode()
     assert decoded == "test_user:test_key"
@@ -106,7 +113,7 @@ def test_validate_webhook_valid(klarna_integrator):
     payload = {"event": "payment.update", "amount": 100}
     raw_body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
     signature = hmac.new(
-        klarna_integrator.config.webhook_secret.encode(),
+        klarna_integrator.config.extra["webhook_secret"].encode(),
         raw_body,
         hashlib.sha256
     ).hexdigest()
@@ -133,7 +140,7 @@ def test_parse_webhook_valid(klarna_integrator):
     }
     raw_body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
     sig = hmac.new(
-        klarna_integrator.config.webhook_secret.encode(),
+        klarna_integrator.config.extra["webhook_secret"].encode(),
         raw_body,
         hashlib.sha256
     ).hexdigest()
@@ -181,7 +188,7 @@ def test_format_transaction_missing_email(klarna_integrator, sample_transaction)
 @pytest.mark.asyncio
 async def test_send_payment_success(klarna_integrator, sample_transaction):
     """Mock successful Klarna payment creation."""
-    mock_response = AsyncMock(status=201)
+    mock_response = MagicMock(status=201)
     mock_response.json.return_value = {
         "session_id": "sess_123",
         "redirect_url": "https://klarna.com/pay",
@@ -189,6 +196,7 @@ async def test_send_payment_success(klarna_integrator, sample_transaction):
     }
 
     mock_client = AsyncMock()
+    mock_client.__aenter__.return_value = mock_client
     mock_client.post.return_value = mock_response
 
     with patch.object(klarna_integrator, "get_client", return_value=mock_client):
@@ -203,10 +211,11 @@ async def test_send_payment_success(klarna_integrator, sample_transaction):
 @pytest.mark.asyncio
 async def test_send_payment_failure(klarna_integrator, sample_transaction):
     """Handle Klarna payment API error."""
-    mock_response = AsyncMock(status=400)
+    mock_response = MagicMock(status=400)
     mock_response.json.return_value = {"error": "Invalid request"}
 
     mock_client = AsyncMock()
+    mock_client.__aenter__.return_value = mock_client
     mock_client.post.return_value = mock_response
 
     with patch.object(klarna_integrator, "get_client", return_value=mock_client):
@@ -217,10 +226,11 @@ async def test_send_payment_failure(klarna_integrator, sample_transaction):
 @pytest.mark.asyncio
 async def test_check_status_success(klarna_integrator):
     """Mock successful Klarna status check."""
-    mock_response = AsyncMock(status=200)
+    mock_response = MagicMock(status=200)
     mock_response.json.return_value = {"status": "CAPTURED", "order_amount": 5000, "purchase_currency": "EUR"}
 
     mock_client = AsyncMock()
+    mock_client.__aenter__.return_value = mock_client
     mock_client.get.return_value = mock_response
 
     with patch.object(klarna_integrator, "get_client", return_value=mock_client):
@@ -234,10 +244,11 @@ async def test_check_status_success(klarna_integrator):
 @pytest.mark.asyncio
 async def test_refund_success(klarna_integrator):
     """Mock successful Klarna refund."""
-    mock_response = AsyncMock(status=200)
+    mock_response = MagicMock(status=200)
     mock_response.json.return_value = {"refunded_amount": 5000, "currency": "EUR"}
 
     mock_client = AsyncMock()
+    mock_client.__aenter__.return_value = mock_client
     mock_client.post.return_value = mock_response
 
     with patch.object(klarna_integrator, "get_client", return_value=mock_client):
@@ -251,9 +262,10 @@ async def test_refund_success(klarna_integrator):
 @pytest.mark.asyncio
 async def test_cancel_transaction_success(klarna_integrator):
     """Mock successful Klarna transaction cancellation."""
-    mock_response = AsyncMock(status=200)
+    mock_response = MagicMock(status=200)
 
     mock_client = AsyncMock()
+    mock_client.__aenter__.return_value = mock_client
     mock_client.post.return_value = mock_response
 
     with patch.object(klarna_integrator, "get_client", return_value=mock_client):
@@ -263,7 +275,7 @@ async def test_cancel_transaction_success(klarna_integrator):
 @pytest.mark.asyncio
 async def test_get_transaction_detail_success(klarna_integrator):
     """Mock retrieving Klarna transaction details."""
-    mock_response = AsyncMock(status=200)
+    mock_response = MagicMock(status=200)
     mock_response.json.return_value = {
         "status": "CAPTURED",
         "order_amount": 5000,
@@ -278,6 +290,7 @@ async def test_get_transaction_detail_success(klarna_integrator):
     }
 
     mock_client = AsyncMock()
+    mock_client.__aenter__.return_value = mock_client
     mock_client.get.return_value = mock_response
 
     with patch.object(klarna_integrator, "get_client", return_value=mock_client):
