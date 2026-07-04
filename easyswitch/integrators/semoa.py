@@ -3,27 +3,28 @@
 EasySwitch - SEMOA Integrator
 """
 
-from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing import Any, ClassVar, Dict, List, Optional
 
-from easyswitch.adapters.base import BaseAdapter
-from easyswitch.conf.config import Config
+from easyswitch.adapters.base import AdaptersRegistry, BaseAdapter
 from easyswitch.exceptions import (AuthenticationError, PaymentError,
                                    TransactionNotFoundError,
                                    UnsupportedOperationError)
 from easyswitch.types import (Currency, CustomerInfo, PaymentResponse,
                               Provider, TransactionDetail, TransactionStatus,
-                              TransactionType)
-from easyswitch.utils.http import HTTPClient
+                              TransactionStatusResponse, TransactionType,
+                              WebhookEvent)
 
 
 ####
 ##      SEMOA INTEGRATOR
 #####
+@AdaptersRegistry.register()
 class SemoaAdapter(BaseAdapter):
     """Semoa Integrator for EasySwitch SDK."""
 
     SANDBOX_URL: str = "https://sandbox.semoa-payments.com/api/"
 
+    # TODO: Replace with actual production URL when available.
     PRODUCTION_URL: str = "https://sandbox.semoa-payments.com/api/"
 
     SUPPORTED_CURRENCIES: ClassVar[List[Currency]] = [
@@ -40,25 +41,25 @@ class SemoaAdapter(BaseAdapter):
         Currency.USD: 1.0
     }
 
-    MAX_AMOUNT: ClassVar[Dict[Currency, float]] = {     # Currently unknown
+    MAX_AMOUNT: ClassVar[Dict[Currency, float]] = {
         Currency.XOF: 1000000.0,
         Currency.XAF: 1000000.0,
         Currency.EUR: 10000.0,
         Currency.USD: 10000.0
     }
 
-    def _validate_credentials(self) -> bool:
-        """ Validate the credentials for CinetPay. """
-        
-        return all(
-            self.config.api_key,                        # USED AS API KEY
-            self.config.extra.get('client_id'),                      # USED AS CLIENT ID
-            self.config.extra.get('client_secret'),     # USED AS API SECRET
-            self.config.extra.get('username'),          # USED AS USERNAME
-            self.config.extra.get('password'),          # USED AS PASSWORD
-            self.config.callback_url                    # USED AS CALLBACK URL
-        )
-    
+    def validate_credentials(self) -> bool:
+        """Validate that all required Semoa credentials are present."""
+
+        return all([
+            self.config.api_key,
+            self.config.extra.get('client_id'),
+            self.config.extra.get('client_secret'),
+            self.config.extra.get('username'),
+            self.config.extra.get('password'),
+            self.config.callback_url
+        ])
+
     def get_credentials(self):
         """Get the credentials for Semoa."""
         return {
@@ -67,51 +68,43 @@ class SemoaAdapter(BaseAdapter):
             "client_id": self.config.extra.get('client_id'),
             "client_secret": self.config.extra.get('client_secret'),
         }
-    
+
     def get_headers(self, authorization=False):
         """Get the headers for Semoa."""
 
         headers = {
-            'Content-Type':'application/json'
+            'Content-Type': 'application/json'
         }
         if authorization:
             headers['Authorization'] = f'Bearer {self.config.token}'
         return headers
-    
-    async def authenticate(self):
-        """Authenticate Our App and get Semoa AUTH_TOKEN."""
 
-        # Send Authentication POST request to Semoa API
+    async def authenticate(self):
+        """Authenticate the application and retrieve a Semoa access token."""
+
         async with self.get_client() as client:
             response = await client.post(
-                endpoint = "auth",
-                json_data = self.get_credentials(),
-                headers = {
+                endpoint="auth",
+                json_data=self.get_credentials(),
+                headers={
                     "Content-Type": "application/json"
                 }
             )
-            # Check if the response is successful
             if response.status == 200:
-                # Extract the token from the response
                 self.config.token = response.data.get("access_token")
                 return True
             else:
                 raise AuthenticationError(
                     message="Authentication failed",
-                    status_code = response.status,
-                    raw_response = response.data
+                    status_code=response.status,
+                    raw_response=response.data
                 )
-            
-    def format_transaction(self, data):
+
+    def format_transaction(self, data: TransactionDetail) -> Dict[str, Any]:
         """
-        Format the standard transaction data to Semoa specific Order format.
-        Args:
-            data (Dict): The transaction data to format.
-        Returns:
-            Dict: The formatted transaction data.
+        Convert standardized TransactionDetail into Semoa-specific order format.
         """
 
-        # Validate the transaction data
         self.validate_transaction(data)
 
         return {
@@ -127,87 +120,167 @@ class SemoaAdapter(BaseAdapter):
             "callback_url": data.callback_url or self.config.callback_url
         }
 
-    async def send_payment(self, transaction) -> PaymentResponse:
+    async def send_payment(self, transaction: TransactionDetail) -> PaymentResponse:
         """
         Send a payment request to Semoa.
         """
 
-        # First we need to format the trasaction
         order = self.format_transaction(transaction)
 
-        # Then send the payment request
-        response = await self.client.post(
-            endpoint = "orders",
-            json_data = order,
-            headers = self.get_headers(authorization=True)
-        )
-        # Check if the response is successful
-        if response.status_code in range(200, 300):
-            # Extract the payment link from the response
-            payment_link = response.data.get("bill_url")
-            transaction_id = response.data.get("orderNum")
-
-            # Create a PaymentResponse object
-            payment_response = PaymentResponse(
-                transaction_id = transaction_id,
-                provider = self.provider_name(),
-                status = TransactionStatus.PENDING,
-                amount = transaction.amount,
-                currency = transaction.currency,
-                created_at = response.data.get("created_at"),
-                expires_at = response.data.get("expires_at"),
-                reference = response.data.get("reference"),
-                payment_link = payment_link,
-                customer = transaction.customer,
-                raw_response = response.data,
-                metadata = transaction.metadata
+        async with self.get_client() as client:
+            response = await client.post(
+                endpoint="orders",
+                json_data=order,
+                headers=self.get_headers(authorization=True)
             )
-            return payment_response
-        
-        # If the response is not successful, raise an API error
-        raise PaymentError(
-            message="Payment request failed",
-            status_code = response.status_code,
-            raw_response = response.data
-        )
-    
-    async def check_status(self, transaction_id: str) -> TransactionStatus:
+
+            if response.status in range(200, 300):
+                payment_link = response.data.get("bill_url")
+                transaction_id = response.data.get("orderNum")
+
+                return PaymentResponse(
+                    transaction_id=transaction_id,
+                    provider=self.provider_name(),
+                    status=TransactionStatus.PENDING,
+                    amount=transaction.amount,
+                    currency=transaction.currency,
+                    created_at=response.data.get("created_at"),
+                    expires_at=response.data.get("expires_at"),
+                    reference=response.data.get("reference"),
+                    payment_link=payment_link,
+                    customer=transaction.customer,
+                    raw_response=response.data,
+                    metadata=transaction.metadata
+                )
+
+            raise PaymentError(
+                message="Payment request failed",
+                status_code=response.status,
+                raw_response=response.data
+            )
+
+    async def check_status(self, transaction_id: str) -> TransactionStatusResponse:
         """
         Check the status of a transaction.
-        Args:
-            transaction_id (str): The transaction ID to check.
-        Returns:
-            TransactionStatus: The status of the transaction.
         """
-        # Send a GET request to check the status of the transaction
-        response = self.client.get(
-            endpoint = f"orders/{transaction_id}",
-            headers = self.get_headers(authorization=True)
-        )
-        # Check if the response is successful
-        if response.status_code in range(200, 300):
-            # Extract the status from the response
-            status = response.data.get("status")
-            return TransactionStatus(status)
-        # If the response is not successful, raise a TransactionNotFoundError
-        raise TransactionNotFoundError(
-            message="Transaction not found",
-            status_code = response.status_code,
-            raw_response = response.data
-        )
-    
+
+        async with self.get_client() as client:
+            response = await client.get(
+                endpoint=f"orders/{transaction_id}",
+                headers=self.get_headers(authorization=True)
+            )
+
+            if response.status in range(200, 300):
+                status = response.data.get("status")
+                return TransactionStatusResponse(
+                    transaction_id=transaction_id,
+                    provider=self.provider_name(),
+                    status=TransactionStatus(status) if status else TransactionStatus.UNKNOWN,
+                    amount=response.data.get("amount", 0),
+                    data=response.data,
+                )
+
+            raise TransactionNotFoundError(
+                message="Transaction not found",
+                status_code=response.status,
+                raw_response=response.data
+            )
+
     async def cancel_transaction(self, transaction_id: str) -> bool:
         """
         Cancel a transaction.
-        Args:
-            transaction_id (str): The transaction ID to cancel.
-        Returns:
-            bool: True if the transaction was cancelled, False otherwise.
         """
-        # Send a DELETE request to cancel the transaction
-        response = self.client.delete(
-            endpoint = f"orders/{transaction_id}",
-            headers = self.get_headers(authorization=True)
+
+        async with self.get_client() as client:
+            response = await client.delete(
+                endpoint=f"orders/{transaction_id}",
+                headers=self.get_headers(authorization=True)
+            )
+
+            return response.status in range(200, 300)
+
+    async def refund(
+        self,
+        transaction_id: str,
+        amount: Optional[float] = None,
+        reason: Optional[str] = None
+    ) -> PaymentResponse:
+        """
+        Refund a transaction.
+        """
+        raise UnsupportedOperationError(
+            message="Semoa does not support refunds via the public API",
+            provider=self.provider_name()
         )
-        # Check if the response is successful
-        return super().send_payment(transaction)
+
+    async def validate_webhook(
+        self,
+        payload: Dict[str, Any],
+        headers: Dict[str, str]
+    ) -> bool:
+        """
+        Validate an incoming Semoa webhook.
+        Semoa sends a signature via an Authorization or X-Semoa-Signature header.
+        """
+        # TODO: Implement Semoa-specific webhook signature verification
+        # when their webhook documentation is available.
+        return True
+
+    async def parse_webhook(
+        self,
+        payload: Dict[str, Any],
+        headers: Dict[str, str]
+    ) -> WebhookEvent:
+        """
+        Parse a Semoa webhook into a standard WebhookEvent.
+        """
+
+        if not await self.validate_webhook(payload, headers):
+            raise AuthenticationError(
+                message="Invalid webhook signature",
+                provider=self.provider_name()
+            )
+
+        return WebhookEvent(
+            event_type=payload.get("event", payload.get("status", "unknown")),
+            provider=self.provider_name(),
+            transaction_id=str(payload.get("orderNum", payload.get("id", ""))),
+            status=self.get_normalize_status(payload.get("status", "").upper()) if hasattr(self, 'get_normalize_status') else TransactionStatus.UNKNOWN,
+            amount=float(payload.get("amount", 0)),
+            currency=payload.get("currency", "XOF"),
+            created_at=payload.get("created_at"),
+            raw_data=payload,
+            metadata=payload.get("metadata", {}),
+        )
+
+    async def get_transaction_detail(self, transaction_id: str) -> TransactionDetail:
+        """
+        Retrieve full transaction details from Semoa.
+        Falls back to check_status enriched with minimal detail.
+        """
+        status_response = await self.check_status(transaction_id)
+
+        return TransactionDetail(
+            transaction_id=transaction_id,
+            provider=self.provider_name(),
+            amount=status_response.amount,
+            currency=Currency.XOF,
+            status=status_response.status,
+            raw_data=status_response.data,
+        )
+
+    def get_normalize_status(self, status: str) -> TransactionStatus:
+        """Map Semoa status strings to standardised TransactionStatus values."""
+
+        mapping = {
+            "PENDING": TransactionStatus.PENDING,
+            "SUCCESSFUL": TransactionStatus.SUCCESSFUL,
+            "SUCCESS": TransactionStatus.SUCCESSFUL,
+            "FAILED": TransactionStatus.FAILED,
+            "FAIL": TransactionStatus.FAILED,
+            "CANCELLED": TransactionStatus.CANCELLED,
+            "CANCEL": TransactionStatus.CANCELLED,
+            "EXPIRED": TransactionStatus.EXPIRED,
+            "ERROR": TransactionStatus.ERROR,
+        }
+        return mapping.get(status, TransactionStatus.UNKNOWN)
