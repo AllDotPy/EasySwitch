@@ -7,7 +7,7 @@ from typing import Any, ClassVar, Dict, List, Optional, Type
 from easyswitch.conf import ProviderConfig
 from easyswitch.exceptions import InvalidProviderError
 from easyswitch.types import (Currency, PaymentResponse, TransactionDetail,
-                              TransactionStatus)
+                              TransactionStatus, TransactionStatusResponse)
 from easyswitch.utils import USER_AGENT
 from easyswitch.utils.http import HTTPClient
 from easyswitch.utils.validators import (validate_amount, validate_currency,
@@ -163,7 +163,7 @@ class BaseAdapter(abc.ABC):
                     'User-Agent': USER_AGENT
                 },
                 timeout = self.config.timeout,
-                debug = self.context.get('debug_mode') or True
+                debug = self.context.get('debug_mode', False)
             )
             
         # Return the HTTP client
@@ -352,15 +352,12 @@ class BaseAdapter(abc.ABC):
         return cls.__name__.replace("Adapter", "").lower()
     
     @abc.abstractmethod
-    def validate_credentials(self, credentials: ProviderConfig) -> bool:
+    def validate_credentials(self) -> bool:
         """
         Validate the credentials for the provider.
         This method should be implemented by each specific adapter to
         check if the provided credentials are valid for the specific adapter.
-        
-        Args:
-            credentials: The credentials to validate
-            
+
         Returns:
             bool: True if the credentials are valid, False otherwise
         """
