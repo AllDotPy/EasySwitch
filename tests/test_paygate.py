@@ -80,10 +80,6 @@ def sample_transaction():
         reason="Test payment"
     )
 
-@pytest.fixture
-def paygate_adapter(paygate_config):
-    return PayGateAdapter(paygate_config)
-
 @pytest.mark.asyncio
 async def test_send_payment_success(paygate_adapter, sample_transaction):
     """Test successful direct payment request"""
