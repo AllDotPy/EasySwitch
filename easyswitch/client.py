@@ -204,7 +204,7 @@ class EasySwitch:
                     context = {
                         'debug_mode': self.config.debug,
                         'log_config': self.config.logging,
-                        'defaulf_currency': self.config.default_currency
+                        'default_currency': self.config.default_currency
                     }
                 )
             except ValueError as e:
