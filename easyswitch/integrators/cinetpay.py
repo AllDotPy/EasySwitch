@@ -179,25 +179,13 @@ class CinetpayAdapter(BaseAdapter):
 
     def validate_webhook(self, payload, headers) -> bool:
         """ Validate the webhook payload. """
-        # Check if the payload is valid
         if not payload:
-            raise AuthenticationError(
-                message="Invalid payload",
-                provider = self.provider_name()
-            )
+            return False
         
-        # Check if the headers are valid
         if not headers or 'x-token' not in headers:
-            raise AuthenticationError(
-                message="Invalid headers",
-                provider = self.provider_name()
-            )
+            return False
         
-        # Now we need to check if the recieved token is valid
-        # Get the token from the headers
         recieved_token = headers.get('x-token')
-        # Ten generate the token from the payload
-        # and the credentials (config.api_secret)
         data = self.get_payload_str(payload)
         
         return self.compare_tokens(data, recieved_token)
