@@ -15,11 +15,18 @@ from typing import Any, Dict, Optional
 class Provider(str, Enum):
     """ Available choices for supported Payment providers. """
 
+    CINETPAY = 'CINETPAY'
     SEMOA = 'SEMOA'
     BIZAO = 'BIZAO'
-    CINETPAY = 'CINETPAY'
     PAYGATE = 'PAYGATE'
     FEDAPAY = 'FEDAPAY'
+    PAYSTACK = 'PAYSTACK'
+    MTN = 'MTN'
+    AIRTEL_MONEY = 'AIRTEL_MONEY'
+    QOSPAY = 'QOSPAY'
+    PAYPLUS = 'PAYPLUS'
+    KKIA_PAY = 'KKIA_PAY'
+    PAYDUNYA = 'PAYDUNYA'
 
 
 ####
@@ -37,6 +44,16 @@ class Currency(str, Enum):
     CDF = "CDF"  # Congolese Franc
     GNF = "GNF"  # Guinean Franc
     KMF = "KMF"  # Comorian Franc
+    UGX = "UGX"  # Ugandan Shilling
+    TZS = "TZS"  # Tanzanian Shilling
+    KES = "KES"  # Kenyan Shilling
+    RWF = "RWF"  # Rwandan Franc
+    ZMW = "ZMW"  # Zambian Kwacha
+    MWK = "MWK"  # Malawian Kwacha
+    BIF = "BIF"  # Burundian Franc
+    ETB = "ETB"  # Ethiopian Birr
+    BWP = "BWP"  # Botswanan Pula
+    ZWL = "ZWL"  # Zimbabwean Dollar
 
 
 ####
