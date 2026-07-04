@@ -280,15 +280,12 @@ class CinetpayAdapter(BaseAdapter):
                 },
                 headers = self.get_headers()
             )
-            print(response.url)
-
             # No need to check the status code, cinetpay sends the status in the body
             # Check if the response is successful
             if response.status in range(200, 300):
                 data = response.data
                 # check for a success message
                 status = data.get('message')
-                print(data)
 
                 return TransactionStatusResponse(
                     transaction_id = transaction_id,
