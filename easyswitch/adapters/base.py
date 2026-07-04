@@ -110,20 +110,22 @@ class BaseAdapter(abc.ABC):
     """HTTP client for the adapter."""
     
     def __init__(
-        self, 
-        config: ProviderConfig, 
+        self,
+        config: ProviderConfig,
         context: Optional[Dict[str,Any]] = None
     ):
         """
         Initialize the adapter with the provided configuration.
-        
+
         Args:
             config: The EasySwitch configuration object
         (Note: This should contain all necessary configuration for the adapter)
         (Note: This may include API keys, endpoints, etc.)
         """
+        if isinstance(config, dict):
+            config = ProviderConfig(**config)
         self.config = config
-        self.context = context
+        self.context = context or {}
 
         # Initialize the adapter with the provided configuration
         # This may include setting up API keys, endpoints, etc.
