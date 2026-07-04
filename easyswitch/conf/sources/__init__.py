@@ -1,0 +1,3 @@
+"""
+EasySwitch - Configuration Sources Package.
+"""
