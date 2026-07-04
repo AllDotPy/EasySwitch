@@ -179,7 +179,6 @@ class BizaoAdapter(BaseAdapter):
             # Then Check for success
             if response.status in range(200,300):
                 self.config.api_key = response.data.get('access_token')
-                print(self.config.api_key)
                 return
 
             # Raise AuthenticationError
@@ -250,11 +249,41 @@ class BizaoAdapter(BaseAdapter):
 
         return statues.get(status, TransactionStatus.UNKNOWN)
     
-    def parse_webhook(self, payload, headers):
-        return super().parse_webhook(payload, headers)
+    def validate_webhook(self, payload: Dict[str, Any], headers: Dict[str, str]) -> bool:
+        """Validate the authenticity of a Bizao webhook."""
+        # Bizao signs webhooks with an HMAC-SHA256 of the raw body,
+        # sent in the X-Hub-Signature header.
+        signature = headers.get("X-Hub-Signature") or headers.get("x-hub-signature")
+        secret = self.config.extra.get("secret") or self.config.api_secret
+        if not signature or not secret:
+            return False
+
+        # Recompute the expected signature from the JSON body
+        raw_body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+        expected = hmac.new(secret.encode("utf-8"), msg=raw_body, digestmod=hashlib.sha256).hexdigest()
+        # Bizao sometimes prefixes the signature with "sha256="
+        received = signature.replace("sha256=", "").strip()
+        return hmac.compare_digest(expected, received)
     
-    def validate_webhook(self, payload, headers):
-        return super().validate_webhook(payload, headers)
+    def parse_webhook(self, payload: Dict[str, Any], headers: Dict[str, str]) -> WebhookEvent:
+        """Parse a validated Bizao webhook into a standard WebhookEvent."""
+        if not self.validate_webhook(payload, headers):
+            raise AuthenticationError(
+                message="Invalid webhook signature",
+                provider=self.provider_name()
+            )
+
+        return WebhookEvent(
+            event_type=payload.get("event", payload.get("status", "unknown")),
+            provider=self.provider_name(),
+            transaction_id=str(payload.get("order_id", payload.get("transaction_id", ""))),
+            status=self.get_normalize_status(payload.get("status", "").upper()),
+            amount=float(payload.get("amount", 0)),
+            currency=payload.get("currency", "XOF"),
+            created_at=payload.get("created_at"),
+            raw_data=payload,
+            metadata=payload.get("metadata", {}),
+        )
     
     async def send_payment(self, transaction: TransactionDetail) -> PaymentResponse:
         """
