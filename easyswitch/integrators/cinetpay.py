@@ -99,7 +99,7 @@ class CinetpayAdapter(BaseAdapter):
             "customer_name": data.customer.last_name,
             "customer_surname": data.customer.first_name,
             "customer_email": data.customer.email,
-            "customer_phone": data.customer.phone_number.replace(" ", ""),
+            "customer_phone": data.customer.phone_number.replace(" ", "").lstrip("+"),
             "customer_country": data.customer.country,
             "customer_state": data.customer.state,
             "customer_city": data.customer.city,
@@ -199,10 +199,19 @@ class CinetpayAdapter(BaseAdapter):
                 provider = self.provider_name()
             )
         
+        # Derive status from the payment action
+        action = payload.get("cpm_page_action", "")
+        event_status = (
+            TransactionStatus.SUCCESSFUL
+            if "SUCCESS" in action.upper()
+            else TransactionStatus.UNKNOWN
+        )
+
         return WebhookEvent(
-            event_type = payload.get("cpm_page_action"),
+            event_type = action,
             provider = self.provider_name(),
             transaction_id = payload.get("cpm_trans_id"),
+            status = event_status,
             amount = payload.get("cpm_amount"),
             currency = payload.get("cpm_currency"),
             created_at = payload.get("cpm_trans_date"),
