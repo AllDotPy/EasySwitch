@@ -128,7 +128,7 @@ class PaystackAdapter(BaseAdapter):
         async with self.get_client() as client:
             response = await client.post(
                 "/transaction/initialize",
-                json=payload,
+                json_data=payload,
                 headers=self.get_headers()
             )
 
@@ -193,7 +193,7 @@ class PaystackAdapter(BaseAdapter):
             if amount:
                 payload["amount"] = int(amount * 100)  
 
-            response = await client.post("/refund", json=payload, headers=self.get_headers())
+            response = await client.post("/refund", json_data=payload, headers=self.get_headers())
 
             data = response.data
             if response.status in range(200, 300) and data.get("status"):
