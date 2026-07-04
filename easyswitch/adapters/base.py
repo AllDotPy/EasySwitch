@@ -5,9 +5,10 @@ import abc
 from typing import Any, ClassVar, Dict, List, Optional, Type
 
 from easyswitch.conf import ProviderConfig
-from easyswitch.exceptions import InvalidProviderError
+from easyswitch.exceptions import (InvalidProviderError,
+                                    ValidationError)
 from easyswitch.types import (Currency, PaymentResponse, TransactionDetail,
-                              TransactionStatus)
+                              TransactionStatus, TransactionStatusResponse)
 from easyswitch.utils import USER_AGENT
 from easyswitch.utils.http import HTTPClient
 from easyswitch.utils.validators import (validate_amount, validate_currency,
@@ -109,20 +110,22 @@ class BaseAdapter(abc.ABC):
     """HTTP client for the adapter."""
     
     def __init__(
-        self, 
-        config: ProviderConfig, 
+        self,
+        config: ProviderConfig,
         context: Optional[Dict[str,Any]] = None
     ):
         """
         Initialize the adapter with the provided configuration.
-        
+
         Args:
             config: The EasySwitch configuration object
         (Note: This should contain all necessary configuration for the adapter)
         (Note: This may include API keys, endpoints, etc.)
         """
+        if isinstance(config, dict):
+            config = ProviderConfig(**config)
         self.config = config
-        self.context = context
+        self.context = context or {}
 
         # Initialize the adapter with the provided configuration
         # This may include setting up API keys, endpoints, etc.
@@ -163,7 +166,7 @@ class BaseAdapter(abc.ABC):
                     'User-Agent': USER_AGENT
                 },
                 timeout = self.config.timeout,
-                debug = self.context.get('debug_mode') or True
+                debug = self.context.get('debug_mode', False)
             )
             
         # Return the HTTP client
@@ -352,15 +355,12 @@ class BaseAdapter(abc.ABC):
         return cls.__name__.replace("Adapter", "").lower()
     
     @abc.abstractmethod
-    def validate_credentials(self, credentials: ProviderConfig) -> bool:
+    def validate_credentials(self) -> bool:
         """
         Validate the credentials for the provider.
         This method should be implemented by each specific adapter to
         check if the provided credentials are valid for the specific adapter.
-        
-        Args:
-            credentials: The credentials to validate
-            
+
         Returns:
             bool: True if the credentials are valid, False otherwise
         """
@@ -388,12 +388,22 @@ class BaseAdapter(abc.ABC):
             bool: True if the transaction is valid, False otherwise
         """
 
-        # Validate the amount
+        # Validate the amount range
         validate_amount(
-            transaction.amount, 
-            self.MIN_AMOUNT[transaction.currency], 
-            # self.MAX_AMOUNT[transaction.currency]
+            transaction.amount,
+            self.MIN_AMOUNT.get(transaction.currency, 0),
         )
+
+        # Validate the maximum amount if configured
+        max_amount = self.MAX_AMOUNT.get(transaction.currency)
+        if max_amount is not None and transaction.amount > max_amount:
+            raise ValidationError(
+                message=(
+                    f"Amount {transaction.amount} exceeds maximum "
+                    f"of {max_amount} for {transaction.currency.value}"
+                ),
+                field="amount",
+            )
         
         # Validate the currency
         validate_currency(

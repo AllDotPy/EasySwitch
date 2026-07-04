@@ -1,118 +1,125 @@
-# 📖 Shared Types
+# Shared Types (`easyswitch.types`)
 
-The `easyswitch.types` module defines **shared enums, dataclasses, and structures** used across the EasySwitch SDK.
+The `easyswitch.types` module defines the **shared enums and dataclasses** used across the SDK.
 These ensure that all providers, responses, and events follow a consistent format.
 
 ---
 
-## 🏦 Providers
+## Provider Enum
 
 ```python
-class Provider(str, Enum)
+class Provider(str, Enum):
 ```
 
-Represents the list of **supported payment aggregators**.
+Represents all **supported payment aggregators**.
 
-| Member     | Value        | Description          |
-| ---------- | ------------ | -------------------- |
-| `SEMOA`    | `"SEMOA"`    | Semoa aggregator.    |
-| `BIZAO`    | `"BIZAO"`    | Bizao aggregator.    |
-| `CINETPAY` | `"CINETPAY"` | CinetPay aggregator. |
-| `PAYGATE`  | `"PAYGATE"`  | PayGate aggregator.  |
-| `FEDAPAY`  | `"FEDAPAY"`  | FedaPay aggregator.  |
-
-✅ Used whenever you need to specify or identify the payment provider.
+| Member | Value | Description |
+|--------|-------|-------------|
+| `CINETPAY` | `"CINETPAY"` | CinetPay |
+| `SEMOA` | `"SEMOA"` | Semoa |
+| `BIZAO` | `"BIZAO"` | Bizao |
+| `PAYGATE` | `"PAYGATE"` | PayGate Global |
+| `FEDAPAY` | `"FEDAPAY"` | FedaPay |
+| `PAYSTACK` | `"PAYSTACK"` | Paystack |
+| `MTN` | `"MTN"` | MTN Mobile Money |
+| `AIRTEL_MONEY` | `"AIRTEL_MONEY"` | Airtel Money |
+| `QOSPAY` | `"QOSPAY"` | QosPay (coming soon) |
+| `PAYPLUS` | `"PAYPLUS"` | PayPlus (coming soon) |
+| `KKIAPAY` | `"KKIAPAY"` | KkiaPay (coming soon) |
+| `PAYDUNYA` | `"PAYDUNYA"` | PayDunya (coming soon) |
 
 ---
 
-## 💱 Currency
+## Currency Enum
 
 ```python
-class Currency(str, Enum)
+class Currency(str, Enum):
 ```
 
-Represents the **supported currencies**.
-
-| Member | Value   | Description                      |
-| ------ | ------- | -------------------------------- |
-| `XOF`  | `"XOF"` | CFA Franc BCEAO (West Africa).   |
-| `XAF`  | `"XAF"` | CFA Franc BEAC (Central Africa). |
-| `NGN`  | `"NGN"` | Nigerian Naira.                  |
-| `GHS`  | `"GHS"` | Ghanaian Cedi.                   |
-| `EUR`  | `"EUR"` | Euro.                            |
-| `USD`  | `"USD"` | US Dollar.                       |
-| `CDF`  | `"CDF"` | Congolese Franc.                 |
-| `GNF`  | `"GNF"` | Guinean Franc.                   |
-| `KMF`  | `"KMF"` | Comorian Franc.                  |
+| Member | Value | Description |
+|--------|-------|-------------|
+| `XOF` | `"XOF"` | CFA Franc BCEAO (West Africa) |
+| `XAF` | `"XAF"` | CFA Franc BEAC (Central Africa) |
+| `NGN` | `"NGN"` | Nigerian Naira |
+| `GHS` | `"GHS"` | Ghanaian Cedi |
+| `EUR` | `"EUR"` | Euro |
+| `USD` | `"USD"` | US Dollar |
+| `CDF` | `"CDF"` | Congolese Franc |
+| `GNF` | `"GNF"` | Guinean Franc |
+| `KMF` | `"KMF"` | Comorian Franc |
+| `UGX` | `"UGX"` | Ugandan Shilling |
+| `TZS` | `"TZS"` | Tanzanian Shilling |
+| `KES` | `"KES"` | Kenyan Shilling |
+| `RWF` | `"RWF"` | Rwandan Franc |
+| `ZMW` | `"ZMW"` | Zambian Kwacha |
+| `MWK` | `"MWK"` | Malawian Kwacha |
+| `BIF` | `"BIF"` | Burundian Franc |
+| `ETB` | `"ETB"` | Ethiopian Birr |
+| `BWP` | `"BWP"` | Botswanan Pula |
+| `ZWL` | `"ZWL"` | Zimbabwean Dollar |
 
 ---
 
-## 🌍 Countries
+## Countries Enum
 
 ```python
-class Countries(str, Enum)
+class Countries(str, Enum):
 ```
 
-Represents the **supported countries**.
-
-| Member        | Value  | Description   |
-| ------------- | ------ | ------------- |
-| `TOGO`        | `"TG"` | Togo          |
-| `BENIN`       | `"BJ"` | Benin         |
-| `GHANA`       | `"GH"` | Ghana         |
-| `BURKINA`     | `"BF"` | Burkina Faso  |
-| `IVORY_COAST` | `"CI"` | Côte d’Ivoire |
+| Member | Value | Description |
+|--------|-------|-------------|
+| `TOGO` | `"TG"` | Togo |
+| `BENIN` | `"BJ"` | Benin |
+| `GHANA` | `"GH"` | Ghana |
+| `BURKINA` | `"BF"` | Burkina Faso |
+| `IVORY_COAST` | `"CI"` | Côte d'Ivoire |
 
 ---
 
-## 🔄 Transaction Types
+## TransactionType Enum
 
 ```python
-class TransactionType(str, Enum)
+class TransactionType(str, Enum):
 ```
 
-Represents the **operation type** of a transaction.
-
-| Member       | Value          | Description                             |
-| ------------ | -------------- | --------------------------------------- |
-| `PAYMENT`    | `"payment"`    | Standard payment (customer → merchant). |
-| `DEPOSIT`    | `"deposit"`    | Deposit into a wallet/account.          |
-| `WITHDRAWAL` | `"withdrawal"` | Withdraw from a wallet/account.         |
-| `REFUND`     | `"refund"`     | Refund of a previous transaction.       |
-| `TRANSFER`   | `"transfer"`   | Transfer between accounts.              |
+| Member | Value | Description |
+|--------|-------|-------------|
+| `PAYMENT` | `"payment"` | Customer → merchant payment |
+| `DEPOSIT` | `"deposit"` | Wallet/account deposit |
+| `WITHDRAWAL` | `"withdrawal"` | Wallet/account withdrawal |
+| `REFUND` | `"refund"` | Refund of previous transaction |
+| `TRANSFER` | `"transfer"` | Transfer between accounts |
 
 ---
 
-## 📊 Transaction Status
+## TransactionStatus Enum
 
 ```python
-class TransactionStatus(str, Enum)
+class TransactionStatus(str, Enum):
 ```
 
-Possible **states** of a transaction.
-
-| Member        | Value           | Meaning                             |
-| ------------- | --------------- | ----------------------------------- |
-| `PENDING`     | `"pending"`     | Waiting to be processed.            |
-| `SUCCESSFUL`  | `"successful"`  | Completed successfully.             |
-| `FAILED`      | `"failed"`      | Failed permanently.                 |
-| `ERROR`       | `"error"`       | Technical error.                    |
-| `CANCELLED`   | `"cancelled"`   | Cancelled by user/system.           |
-| `REFUSED`     | `"refused"`     | Refused by provider.                |
-| `DECLINED`    | `"declined"`    | Declined (e.g. insufficient funds). |
-| `EXPIRED`     | `"expired"`     | Payment expired.                    |
-| `REFUNDED`    | `"refunded"`    | Transaction refunded.               |
-| `PROCESSING`  | `"processing"`  | In progress.                        |
-| `INITIATED`   | `"initiated"`   | Initiated but not yet processed.    |
-| `UNKNOWN`     | `"unknown"`     | Unknown state.                      |
-| `COMPLETED`   | `"completed"`   | Fully completed.                    |
-| `TRANSFERRED` | `"transferred"` | Successfully transferred.           |
+| Member | Value | Description |
+|--------|-------|-------------|
+| `PENDING` | `"pending"` | Awaiting processing |
+| `SUCCESSFUL` | `"successful"` | Completed successfully |
+| `FAILED` | `"failed"` | Failed permanently |
+| `ERROR` | `"error"` | Technical error |
+| `CANCELLED` | `"cancelled"` | Cancelled by user/system |
+| `REFUSED` | `"refused"` | Refused by provider |
+| `DECLINED` | `"declined"` | Declined (insufficient funds, etc.) |
+| `EXPIRED` | `"expired"` | Payment expired |
+| `REFUNDED` | `"refunded"` | Transaction refunded |
+| `PROCESSING` | `"processing"` | In progress |
+| `INITIATED` | `"initiated"` | Initiated but not yet sent |
+| `UNKNOWN` | `"unknown"` | Unrecognised state |
+| `COMPLETED` | `"completed"` | Fully completed |
+| `TRANSFERRED` | `"transferred"` | Successfully transferred |
 
 ---
 
-## 📦 Data Structures
+## Data Structures
 
-### 🔎 `TransactionStatusResponse`
+### TransactionStatusResponse
 
 ```python
 @dataclass
@@ -124,29 +131,33 @@ class TransactionStatusResponse:
     data: Dict[str, Any]
 ```
 
-Represents a **standardized status response** from a provider.
+Returned by `client.check_status()`.
 
 ---
 
-### 👤 `CustomerInfo`
+### CustomerInfo
 
 ```python
 @dataclass
 class CustomerInfo:
-    phone_number: str
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[str]
-    ...
+    phone_number: str = ""
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    postal_code: Optional[str] = None
+    state: Optional[str] = None
+    id: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 ```
 
-Represents **customer details** attached to a transaction.
-
-Useful for receipts, fraud detection, and refunds.
+Used when creating a transaction. `phone_number` is typically the only required field.
 
 ---
 
-### 💳 `PaymentResponse`
+### PaymentResponse
 
 ```python
 @dataclass
@@ -156,20 +167,24 @@ class PaymentResponse:
     status: TransactionStatus
     amount: float
     currency: Currency
-    ...
+    created_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    reference: Optional[str] = None
+    payment_link: Optional[str] = None     # URL to redirect customer to
+    transaction_token: Optional[str] = None
+    customer: Optional[CustomerInfo] = None
+    raw_response: Dict[str, Any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
 ```
 
-Standardized structure returned after a payment request.
-
-#### Properties:
-
-* `is_successful` → `True` if status is `SUCCESSFUL`
-* `is_pending` → `True` if status is `PENDING`, `PROCESSING`, or `INITIATED`
-* `is_failed` → `True` if status is `FAILED`, `CANCELLED`, or `EXPIRED`
+**Properties:**
+- `is_successful` → `True` if `status == TransactionStatus.SUCCESSFUL`
+- `is_pending` → `True` if status is `PENDING`, `PROCESSING`, or `INITIATED`
+- `is_failed` → `True` if status is `FAILED`, `CANCELLED`, or `EXPIRED`
 
 ---
 
-### 📑 `TransactionDetail`
+### TransactionDetail
 
 ```python
 @dataclass
@@ -178,16 +193,25 @@ class TransactionDetail:
     provider: Provider
     amount: float
     currency: Currency
-    status: TransactionStatus
-    transaction_type: TransactionType
-    ...
+    status: TransactionStatus = TransactionStatus.PENDING
+    transaction_type: TransactionType = TransactionType.PAYMENT
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    customer: Optional[CustomerInfo] = None
+    reference: Optional[str] = None
+    reason: Optional[str] = None
+    callback_url: Optional[str] = None
+    return_url: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    raw_data: Dict[str, Any] = field(default_factory=dict)
 ```
 
-Represents a **complete record** of a transaction, including metadata, customer info, and timestamps.
+The main input for `client.send_payment()`.
 
 ---
 
-### 📡 `WebhookEvent`
+### WebhookEvent
 
 ```python
 @dataclass
@@ -198,47 +222,17 @@ class WebhookEvent:
     status: TransactionStatus
     amount: float
     currency: Currency
-    ...
+    created_at: Optional[datetime] = None
+    raw_data: Dict[str, Any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    context: Dict[str, Any] = field(default_factory=dict)
 ```
 
-Represents a standardized **webhook notification event**.
+Returned by `client.parse_webhook()`.
 
 ---
 
-### 🔑 `ApiCredentials`
-
-```python
-@dataclass
-class ApiCredentials:
-    api_key: str
-    api_secret: Optional[str]
-    client_id: Optional[str]
-    ...
-```
-
-Represents authentication credentials for a provider.
-
-#### Utility methods:
-
-* `load_from_env(provider: Provider)` → Loads credentials from environment variables prefixed with `EASYSWITCH_<PROVIDER>_`.
-* `write_to_env(provider: Provider)` → Saves credentials to environment variables.
-
-✅ Example:
-
-```bash
-export EASYSWITCH_CINETPAY_API_KEY="pk_test_123"
-export EASYSWITCH_CINETPAY_API_SECRET="sk_test_123"
-```
-
-```python
-creds = ApiCredentials(api_key="")
-creds.load_from_env(Provider.CINETPAY)
-print(creds.api_key)  # => pk_test_123
-```
-
----
-
-### 📖 `PaginationMeta`
+### PaginationMeta
 
 ```python
 @dataclass
@@ -251,16 +245,4 @@ class PaginationMeta:
     total_count: int
 ```
 
-Standardized structure used when listing or paginating transactions.
-
----
-
-## ✅ Summary
-
-The `easyswitch.types` module provides:
-
-* Unified enums for **providers, currencies, statuses, and transaction types**.
-* Standardized dataclasses for **transactions, customers, payments, webhooks, and pagination**.
-* A common **API credentials system** with built-in env helpers.
-
-These types ensure all providers work seamlessly and consistently under the EasySwitch SDK.
+Standardised pagination metadata (used by FedaPay's list endpoints).

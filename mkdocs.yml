@@ -65,20 +65,18 @@ extra_css:
 # NAVIGATION
 # nav_translations:
 nav:
-  # # English translations
-  # en:
   - Home: index.md
   - Getting Started:
       - Installation: getting-started/installation.md
       - Configuration: getting-started/configuration.md
-  # - Guides:
-  #     - Payments: guides/payments.md
-  #     - Webhooks: guides/webhooks.md
-  #     - Error Handling: guides/error-handling.md
+  - Provider Matrix: provider-matrix.md
   - Integrations:
-      - FedaPay: integrations/fedapay.md
-      - PayGate: integrations/paygate.md
       - CinetPay: integrations/cinetpay.md
+      - PayGate: integrations/paygate.md
+      - FedaPay: integrations/fedapay.md
+      - Paystack: integrations/paystack.md
+      - MTN MoMo: integrations/mtn.md
+      - Airtel Money: integrations/airtel-money.md
       - Semoa: integrations/semoa.md
       - Bizao: integrations/bizao.md
   - API Reference: 

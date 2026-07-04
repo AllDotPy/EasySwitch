@@ -3,6 +3,7 @@ EasySwitch - Fonctions de validation
 """
 import hashlib
 import hmac
+import json
 import re
 from typing import Any, Dict, Optional, Union
 
@@ -55,12 +56,10 @@ def validate_phone_number(
         # Add country prefix if necessary
         if country_code in prefixes:
             prefix = prefixes[country_code]
+            # Strip international call prefixes (00, +) already removed by \D, but double-zero remains
+            cleaned = cleaned.lstrip('0')
             if not cleaned.startswith(prefix):
-                # If the number starts with 0, replace it with the prefix
-                if cleaned.startswith('0'):
-                    cleaned = prefix + cleaned[1:]
-                else:
-                    cleaned = prefix + cleaned
+                cleaned = prefix + cleaned
     
     return cleaned
 
@@ -183,7 +182,7 @@ def validate_webhook_signature(
         bool: True if signature is valid, False otherwise
     """
     if isinstance(payload, dict):
-        payload = bytes(repr(payload).encode('utf-8'))
+        payload = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
     elif isinstance(payload, str):
         payload = bytes(payload.encode('utf-8'))
     

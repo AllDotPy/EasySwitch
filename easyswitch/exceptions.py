@@ -10,12 +10,14 @@ class EasySwitchError(Exception):
     def __init__(
         self, message: str, 
         code: Optional[str] = None, 
-        details: Optional[Dict[str, Any]] = None
+        details: Optional[Dict[str, Any]] = None,
+        **kwargs
     ):
 
         self.message = message
         self.code = code
         self.details = details or {}
+        self.extra = kwargs
         super().__init__(self.message)
 
 
@@ -87,7 +89,10 @@ class RateLimitError(APIError):
 
 class UnsupportedOperationError(EasySwitchError):
     """Unsupported operation error."""
-    pass
+
+    def __init__(self, message: str, provider: Optional[str] = None, **kwargs):
+        self.provider = provider
+        super().__init__(message=message, **kwargs)
 
 
 class PaymentError(APIError):
@@ -132,11 +137,11 @@ class LogError(APIError):
 
 class ValidationError(EasySwitchError):
     """Validation error for request data."""
-    
-    def __init__(self, message: str, field: Optional[str] = None, **kwargs):
+
+    def __init__(self, message: str, field: Optional[str] = None, code: Optional[str] = None, **kwargs):
         self.field = field
         super().__init__(
-            message = message,
-            code = "validation_error",
-            details = {"field": field, **kwargs}
+            message=message,
+            code=code or "validation_error",
+            details={"field": field, **kwargs}
         )

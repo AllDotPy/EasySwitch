@@ -768,6 +768,7 @@ class FedapayAdapter(BaseAdapter):
         # FedaPay does not support refunds
         raise UnsupportedOperationError(
             message = "FedaPay does not support refunds from API",
+            provider = self.provider_name(),
         )
     
     async def check_status(self, transaction_id: str) -> TransactionStatusResponse:
@@ -811,6 +812,7 @@ class FedapayAdapter(BaseAdapter):
         # FedaPay does not support transaction cancellation
         raise UnsupportedOperationError(
             message = "FedaPay does not support transaction cancellation",
+            provider = self.provider_name(),
         )
     
     ############################

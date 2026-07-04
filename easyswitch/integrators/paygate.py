@@ -9,7 +9,7 @@ from typing import Any, ClassVar, Dict, List, Optional
 from easyswitch.adapters.base import AdaptersRegistry, BaseAdapter
 from easyswitch.conf.base import ProviderConfig
 from easyswitch.exceptions import (AuthenticationError, InvalidProviderError, PaymentError,
-                                   UnsupportedOperationError)
+                                   UnsupportedOperationError, ValidationError)
 from easyswitch.types import (Currency, CustomerInfo, PaymentResponse,
                               Provider, TransactionDetail, TransactionStatus,
                               TransactionStatusResponse, TransactionType,
@@ -82,11 +82,17 @@ class PayGateAdapter(BaseAdapter):
 
     def validate_transaction(self, transaction: TransactionDetail) -> bool:
         if transaction.currency not in self.SUPPORTED_CURRENCIES:
-            raise ValueError(f"Unsupported currency: {transaction.currency}")
+            raise ValidationError(
+                message=f"Unsupported currency: {transaction.currency}",
+                field="currency"
+            )
 
         min_amount = self.MIN_AMOUNT.get(transaction.currency, 0)
         if transaction.amount < min_amount:
-            raise ValueError(f"Amount too small. Minimum: {min_amount}")
+            raise ValidationError(
+                message=f"Amount too small. Minimum: {min_amount}",
+                field="amount"
+            )
 
         return True
 
@@ -139,13 +145,14 @@ class PayGateAdapter(BaseAdapter):
         """
         payload = self.format_transaction(transaction)
 
-        response = await self.client.post(
-            endpoint=self.ENDPOINTS["direct_payment"],
-            json_data=payload,
-            headers=self.get_headers()
-        )
+        async with self.get_client() as client:
+            response = await client.post(
+                endpoint=self.ENDPOINTS["direct_payment"],
+                json_data=payload,
+                headers=self.get_headers()
+            )
 
-        if response.status_code == 200:
+        if response.status in range(200, 300):
             return PaymentResponse(
                 transaction_id=payload["identifier"],
                 provider=transaction.provider.name,
@@ -162,7 +169,7 @@ class PayGateAdapter(BaseAdapter):
 
         raise PaymentError(
             message=f"Payment failed: {response.data.get('message', 'Unknown error')}",
-            status_code=response.status_code,
+            status_code=response.status,
             raw_response=response.data
         )
 
@@ -210,29 +217,30 @@ class PayGateAdapter(BaseAdapter):
         Documentation: "Check Payment Status"
         """
         # Try first with v2 method (by identifier)
-        response = await self.client.post(
-            endpoint=self.ENDPOINTS["alt_status_check"],
-            json_data={
-                "auth_token": self.config.api_key,
-                "identifier": transaction_id
-            },
-            headers=self.get_headers()
-        )
-
-        if response.status in range(200, 300):
-            data = response.data
-            return TransactionStatusResponse(
-                transaction_id=transaction_id,
-                provider=self.provider_name(),
-                status=self.get_normalize_status(data.get("status")),
-                amount=float(data.get("amount", 0)),
-                data=data
+        async with self.get_client() as client:
+            response = await client.post(
+                endpoint=self.ENDPOINTS["alt_status_check"],
+                json_data={
+                    "auth_token": self.config.api_key,
+                    "identifier": transaction_id
+                },
+                headers=self.get_headers()
             )
+
+            if response.status in range(200, 300):
+                data = response.data
+                return TransactionStatusResponse(
+                    transaction_id=transaction_id,
+                    provider=self.provider_name(),
+                    status=self.get_normalize_status(data.get("status")),
+                    amount=float(data.get("amount", 0)),
+                    data=data
+                )
 
         # If v2 method fails, try with v1 method (requires tx_reference)
         raise PaymentError(
             message="Status check failed. Note: v1 API requires tx_reference, not transaction_id.",
-            status_code=response.status_code,
+            status_code=response.status,
             raw_response=response.data
         )
 
@@ -250,7 +258,7 @@ class PayGateAdapter(BaseAdapter):
             customer=CustomerInfo(),
             status=status_response.status,
             created_at=status_response.data.get('datetime'),
-            transaction_type=TransactionType,
+            transaction_type=TransactionType.PAYMENT,
             raw_data=status_response.data
         )
     def validate_webhook(self, payload: Dict[str, Any], headers: Dict[str, str]) -> bool:
@@ -260,19 +268,13 @@ class PayGateAdapter(BaseAdapter):
         Documentation: "Receive Payment Confirmation"
         """
         if not payload or not headers:
-            raise AuthenticationError(
-                message="Invalid payload or headers",
-                provider=self.provider_name()
-            )
+            return False
 
         # PayGate doesn't use HMAC signature in webhooks,
         # but we validate that required fields are present
         required_fields = ["tx_reference", "identifier", "amount", "status"]
         if not all(field in payload for field in required_fields):
-            raise AuthenticationError(
-                message="Missing required fields in webhook payload",
-                provider=self.provider_name()
-            )
+            return False
 
         return True
 
@@ -288,6 +290,7 @@ class PayGateAdapter(BaseAdapter):
             event_type="payment_" + payload["status"].lower(),
             provider=self.provider_name(),
             transaction_id=payload["identifier"],
+            status=self.get_normalize_status(payload.get("status", "")),
             amount=float(payload["amount"]),
             currency=Currency.XOF,  # PayGate works in XOF
             created_at=payload.get("datetime"),
@@ -301,13 +304,14 @@ class PayGateAdapter(BaseAdapter):
         Documentation: "Check Your Balance"
         Note: Requires IP whitelisting on PayGate side
         """
-        response = await self.client.post(
-            endpoint=self.ENDPOINTS["balance_check"],
-            json_data={"auth_token": self.config.api_key},
-            headers=self.get_headers()
-        )
+        async with self.get_client() as client:
+            response = await client.post(
+                endpoint=self.ENDPOINTS["balance_check"],
+                json_data={"auth_token": self.config.api_key},
+                headers=self.get_headers()
+            )
 
-        if response.status_code == 200:
+        if response.status in range(200, 300):
             return {
                 "flooz": float(response.data.get("flooz", 0)),
                 "tmoney": float(response.data.get("tmoney", 0))
@@ -315,7 +319,7 @@ class PayGateAdapter(BaseAdapter):
 
         raise PaymentError(
             message="Failed to get balance",
-            status_code=response.status_code,
+            status_code=response.status,
             raw_response=response.data
         )
 

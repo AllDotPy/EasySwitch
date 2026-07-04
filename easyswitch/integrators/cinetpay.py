@@ -99,7 +99,7 @@ class CinetpayAdapter(BaseAdapter):
             "customer_name": data.customer.last_name,
             "customer_surname": data.customer.first_name,
             "customer_email": data.customer.email,
-            "customer_phone": data.customer.phone_number.replace(" ", ""),
+            "customer_phone": data.customer.phone_number.replace(" ", "").lstrip("+"),
             "customer_country": data.customer.country,
             "customer_state": data.customer.state,
             "customer_city": data.customer.city,
@@ -179,25 +179,13 @@ class CinetpayAdapter(BaseAdapter):
 
     def validate_webhook(self, payload, headers) -> bool:
         """ Validate the webhook payload. """
-        # Check if the payload is valid
         if not payload:
-            raise AuthenticationError(
-                message="Invalid payload",
-                provider = self.provider_name()
-            )
+            return False
         
-        # Check if the headers are valid
         if not headers or 'x-token' not in headers:
-            raise AuthenticationError(
-                message="Invalid headers",
-                provider = self.provider_name()
-            )
+            return False
         
-        # Now we need to check if the recieved token is valid
-        # Get the token from the headers
         recieved_token = headers.get('x-token')
-        # Ten generate the token from the payload
-        # and the credentials (config.api_secret)
         data = self.get_payload_str(payload)
         
         return self.compare_tokens(data, recieved_token)
@@ -211,10 +199,19 @@ class CinetpayAdapter(BaseAdapter):
                 provider = self.provider_name()
             )
         
+        # Derive status from the payment action
+        action = payload.get("cpm_page_action", "")
+        event_status = (
+            TransactionStatus.SUCCESSFUL
+            if "SUCCESS" in action.upper()
+            else TransactionStatus.UNKNOWN
+        )
+
         return WebhookEvent(
-            event_type = payload.get("cpm_page_action"),
+            event_type = action,
             provider = self.provider_name(),
             transaction_id = payload.get("cpm_trans_id"),
+            status = event_status,
             amount = payload.get("cpm_amount"),
             currency = payload.get("cpm_currency"),
             created_at = payload.get("cpm_trans_date"),
@@ -280,15 +277,12 @@ class CinetpayAdapter(BaseAdapter):
                 },
                 headers = self.get_headers()
             )
-            print(response.url)
-
             # No need to check the status code, cinetpay sends the status in the body
             # Check if the response is successful
             if response.status in range(200, 300):
                 data = response.data
                 # check for a success message
                 status = data.get('message')
-                print(data)
 
                 return TransactionStatusResponse(
                     transaction_id = transaction_id,

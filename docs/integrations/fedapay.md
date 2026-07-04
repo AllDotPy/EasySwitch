@@ -469,18 +469,19 @@ EasySwitch automatically handles webhook signature validation using FedaPay's si
 EasySwitch also provides methods to manage webhooks through the FedaPay API:
 
 ```python
-
 import asyncio
 
-# Get all webhooks
-FedaPay = client._get_integrator(Provider.FEDAPAY)
-all_webhooks_response = asyncio.run(FedaPay.get_all_webhooks())
-print(f"Total Webhooks: {len(webhooks_response.webhooks)}")
+# Helper to run async methods from a sync context
+async def fetch_webhooks():
+    fedapay = client._get_integrator(Provider.FEDAPAY)
+    all_webhooks = await fedapay.get_all_webhooks()
+    print(f"Total Webhooks: {len(all_webhooks.webhooks)}")
 
-# Get specific webhook details
-webhook_detail = asyncio.run(FedaPay.get_webhook_detail("webhook_id"))
-print(f"Webhook URL: {webhook_detail.url}")
-print(f"Webhook enabled: {webhook_detail.enabled}")
+    detail = await fedapay.get_webhook_detail("webhook_id")
+    print(f"Webhook URL: {detail.url}")
+    print(f"Webhook enabled: {detail.enabled}")
+
+asyncio.run(fetch_webhooks())
 ```
 
 ## EasySwitch Data Types

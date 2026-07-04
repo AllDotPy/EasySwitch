@@ -118,7 +118,7 @@ class AirtelMoneyAdapter(BaseAdapter):
                 headers={"Content-Type": "application/json"}
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if response.status in range(200, 300):
                 self._access_token = data.get("access_token")
                 expires_in = data.get("expires_in", 3600)
@@ -257,7 +257,7 @@ class AirtelMoneyAdapter(BaseAdapter):
                 headers=headers
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             
             if response.status in range(200, 300):
                 resp_data = data.get("data", {})
@@ -269,7 +269,7 @@ class AirtelMoneyAdapter(BaseAdapter):
                     transaction_id=transaction_data.get("id") or transaction_data.get("airtel_money_id"),
                     reference=transaction.reference,
                     provider=self.provider_name(),
-                    status=self.get_normalize_status(status_code).value,
+                    status=self.get_normalize_status(status_code),
                     amount=transaction.amount,
                     currency=transaction.currency,
                     payment_link=None,  # Airtel Money uses USSD/App push
@@ -298,7 +298,7 @@ class AirtelMoneyAdapter(BaseAdapter):
                 headers=headers
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             
             if response.status in range(200, 300):
                 resp_data = data.get("data", {})
@@ -344,7 +344,7 @@ class AirtelMoneyAdapter(BaseAdapter):
                 headers=headers
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             
             if response.status in range(200, 300):
                 refund_data = data.get("data", {})
@@ -356,7 +356,7 @@ class AirtelMoneyAdapter(BaseAdapter):
                     transaction_id=transaction_id,
                     reference=f"refund-{transaction_id}",
                     provider=self.provider_name(),
-                    status=self.get_normalize_status(status_code).value,
+                    status=self.get_normalize_status(status_code),
                     amount=float(transaction.get("amount", amount or 0)),
                     currency=transaction.get("currency", "NGN"),
                     metadata={
@@ -382,7 +382,7 @@ class AirtelMoneyAdapter(BaseAdapter):
                 headers=headers
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             
             if response.status in range(200, 300):
                 resp_data = data.get("data", {})

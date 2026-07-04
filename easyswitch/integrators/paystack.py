@@ -66,24 +66,23 @@ class PaystackAdapter(BaseAdapter):
         }
         return mapping.get(status.lower(), TransactionStatus.UNKNOWN)
 
-        # validate_webhook expects raw_body: bytes
-    def validate_webhook(self, raw_body: bytes, headers: Dict[str, str]) -> bool:
+    def validate_webhook(self, payload: Dict[str, Any], headers: Dict[str, str]) -> bool:
         """Validate the authenticity of a Paystack webhook."""
         signature = headers.get("x-paystack-signature")
         secret_key = getattr(self.config, "api_key", None)
         if not signature or not secret_key:
             return False
 
+        # Paystack HMAC is computed over the raw JSON body bytes.
+        # Re-serialize the dict deterministically to reproduce the signature.
+        raw_body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
         computed_sig = hmac.new(secret_key.encode("utf-8"), msg=raw_body, digestmod=hashlib.sha512).hexdigest()
         return hmac.compare_digest(computed_sig, signature)
     
     def parse_webhook(self, payload: Dict[str, Any], headers: Dict[str, str]) -> WebhookEvent:
         """Parse and validate a Paystack webhook."""
 
-        # Convert payload to bytes for validation
-        raw_body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
-        
-        if not self.validate_webhook(raw_body, headers):
+        if not self.validate_webhook(payload, headers):
             raise PaymentError("Invalid webhook signature", raw_response=payload)
 
         data = payload.get("data", {})
@@ -133,14 +132,14 @@ class PaystackAdapter(BaseAdapter):
                 headers=self.get_headers()
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if response.status in range(200, 300) and data.get("status"):
                 init_data = data.get("data", {})
                 return PaymentResponse(
                     transaction_id=transaction.transaction_id,
                     reference=init_data.get("reference"),
                     provider=self.provider_name(),
-                    status="pending",
+                    status=TransactionStatus.PENDING,
                     amount=transaction.amount,
                     currency=transaction.currency,
                     payment_link=init_data.get("authorization_url"),
@@ -163,7 +162,7 @@ class PaystackAdapter(BaseAdapter):
                 headers=self.get_headers()
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if not data.get("status"):
                 raise PaymentError(
                     message="Failed to verify Paystack transaction",
@@ -196,7 +195,7 @@ class PaystackAdapter(BaseAdapter):
 
             response = await client.post("/refund", json=payload, headers=self.get_headers())
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if response.status in range(200, 300) and data.get("status"):
                 refund_data = data.get("data", {})
                 return PaymentResponse(
@@ -221,7 +220,7 @@ class PaystackAdapter(BaseAdapter):
         async with self.get_client() as client:
             response = await client.get(f"/transaction/{transaction_id}", headers=self.get_headers())
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if response.status in range(200, 300) and data.get("status"):
                 tx = data.get("data", {})
 

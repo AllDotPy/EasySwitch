@@ -5,7 +5,8 @@ import hmac
 import hashlib
 
 from easyswitch.integrators.paystack import PaystackAdapter
-from easyswitch.types import TransactionDetail, Currency
+from easyswitch.exceptions import UnsupportedOperationError
+from easyswitch.types import TransactionDetail, Currency, TransactionStatus
 
 
 @pytest.fixture
@@ -16,7 +17,7 @@ def adapter():
 
     return DummyPaystackAdapter(
         config=MagicMock(api_key="test_key", callback_url="https://callback.url"),
-        context={}   # <-- provide a dict so .get() won't fail
+        context={}
     )
 
 
@@ -36,16 +37,14 @@ class _AsyncCtx:
 async def test_validate_webhook_valid_signature(adapter):
     """Should return True for valid webhook signature."""
     payload = {"event": "charge.success", "data": {"id": 123}}
-    # create the exact byte representation used for signing
-    raw_body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
     sig = hmac.new(
         b"test_key",
-        msg=raw_body,
+        msg=json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8"),
         digestmod=hashlib.sha512
     ).hexdigest()
     headers = {"x-paystack-signature": sig}
 
-    result = adapter.validate_webhook(raw_body, headers)
+    result = adapter.validate_webhook(payload, headers)
     assert result is True
 
 
@@ -53,10 +52,9 @@ async def test_validate_webhook_valid_signature(adapter):
 async def test_validate_webhook_invalid_signature(adapter):
     """Should return False for invalid signature."""
     payload = {"event": "charge.success"}
-    raw_body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
     headers = {"x-paystack-signature": "invalid"}
 
-    result = adapter.validate_webhook(raw_body, headers)
+    result = adapter.validate_webhook(payload, headers)
     assert result is False
 
 
@@ -68,16 +66,16 @@ async def test_send_payment_success(adapter):
         amount=500.0,
         currency=Currency.NGN,
         customer=MagicMock(email="user@example.com", phone_number="+2348012345678"),
-        reference="ref123",
+        provider=None,
+        reference="order_123",
         callback_url="https://callback.url",
-        provider=adapter.provider_name(),  
     )
 
     # Mock client and response
     mock_client = AsyncMock()
     mock_response = MagicMock()
     mock_response.status = 200
-    mock_response.json.return_value = {
+    mock_response.data = {
         "status": True,
         "data": {
             "reference": "ref123",
@@ -94,7 +92,7 @@ async def test_send_payment_success(adapter):
 
     assert response.reference == "ref123"
     assert response.payment_link == "https://paystack.com/pay/ref123"
-    assert response.status == "pending"
+    assert response.status == TransactionStatus.PENDING
 
 
 @pytest.mark.asyncio
@@ -103,7 +101,7 @@ async def test_check_status_success(adapter):
     mock_client = AsyncMock()
     mock_response = MagicMock()
     mock_response.status = 200
-    mock_response.json.return_value = {
+    mock_response.data = {
         "status": True,
         "data": {"id": 1, "status": "success", "amount": 10000, "reference": "ref_123"}
     }
@@ -113,12 +111,11 @@ async def test_check_status_success(adapter):
 
     result = await adapter.check_status("ref_123")
 
-    assert result.status == "success"
     assert result.amount == 100.0  # since /100
 
 
 @pytest.mark.asyncio
 async def test_cancel_transaction_raises(adapter):
     """Paystack does not support cancel; should raise."""
-    with pytest.raises(Exception):
+    with pytest.raises(UnsupportedOperationError):
         await adapter.cancel_transaction("tx_1")

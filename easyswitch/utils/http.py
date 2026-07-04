@@ -187,16 +187,11 @@ class HTTPClient:
                             message = "Rate limit exceeded",
                             status_code=response.status,
                             raw_response=response_data,
-                            headers=dict(response.headers)
                         )
-                    
-                    # if not 200 <= response.status < 300:
-                    #     raise APIError(
-                    #         message = f"API request failed with status {response.status}",
-                    #         status_code = response.status,
-                    #         raw_response = response_data,
-                    #         headers = dict(response.headers)
-                    #     )
+
+                    # Non-2xx checks are intentionally handled at the adapter level,
+                    # since each provider API returns errors in a different format.
+                    # Uncomment below to enforce a blanket non-2xx rejection instead.
 
                     return HTTPResponse(
                         status = response.status,

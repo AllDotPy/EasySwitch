@@ -2,16 +2,13 @@
 EasySwitch - Conf Module.
 """
 
-from easyswitch.utils import import_module_from
 from typing import Dict, Type
+
+from easyswitch.utils import import_module_from
 
 from easyswitch.conf.base import (BaseConfigModel, BaseConfigSource, LogFormat,
                                   LoggingConfig, LogLevel, ProviderConfig,
                                   RootConfig)
-
-# from easyswitch.conf.manager import (
-#     ConfigManager
-# )
 
 __all__ = [
     'BaseConfigSource',

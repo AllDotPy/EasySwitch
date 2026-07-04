@@ -110,8 +110,11 @@ class ProviderConfig(BaseConfigModel):
 class RootConfig(BaseConfigModel):
     """Configuration root, represents EasySwitch config."""
 
-    # environment: str = "sandbox"
-    # """ API environment """
+    environment: str = "sandbox"
+    """ API environment (sandbox|production). Applied to all providers by default. """
+
+    timeout: int = 30
+    """ Default timeout in seconds for all providers. """
 
     debug: bool = False
     """ If True, enable debug mode. """
