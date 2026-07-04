@@ -132,7 +132,7 @@ class PaystackAdapter(BaseAdapter):
                 headers=self.get_headers()
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if response.status in range(200, 300) and data.get("status"):
                 init_data = data.get("data", {})
                 return PaymentResponse(
@@ -162,7 +162,7 @@ class PaystackAdapter(BaseAdapter):
                 headers=self.get_headers()
             )
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if not data.get("status"):
                 raise PaymentError(
                     message="Failed to verify Paystack transaction",
@@ -195,7 +195,7 @@ class PaystackAdapter(BaseAdapter):
 
             response = await client.post("/refund", json=payload, headers=self.get_headers())
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if response.status in range(200, 300) and data.get("status"):
                 refund_data = data.get("data", {})
                 return PaymentResponse(
@@ -220,7 +220,7 @@ class PaystackAdapter(BaseAdapter):
         async with self.get_client() as client:
             response = await client.get(f"/transaction/{transaction_id}", headers=self.get_headers())
 
-            data = response.json() if hasattr(response, "json") else response.data
+            data = response.data
             if response.status in range(200, 300) and data.get("status"):
                 tx = data.get("data", {})
 
