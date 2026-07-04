@@ -9,7 +9,7 @@ from typing import Any, ClassVar, Dict, List, Optional
 from easyswitch.adapters.base import AdaptersRegistry, BaseAdapter
 from easyswitch.conf.base import ProviderConfig
 from easyswitch.exceptions import (AuthenticationError, InvalidProviderError, PaymentError,
-                                   UnsupportedOperationError)
+                                   UnsupportedOperationError, ValidationError)
 from easyswitch.types import (Currency, CustomerInfo, PaymentResponse,
                               Provider, TransactionDetail, TransactionStatus,
                               TransactionStatusResponse, TransactionType,
@@ -82,11 +82,17 @@ class PayGateAdapter(BaseAdapter):
 
     def validate_transaction(self, transaction: TransactionDetail) -> bool:
         if transaction.currency not in self.SUPPORTED_CURRENCIES:
-            raise ValueError(f"Unsupported currency: {transaction.currency}")
+            raise ValidationError(
+                message=f"Unsupported currency: {transaction.currency}",
+                field="currency"
+            )
 
         min_amount = self.MIN_AMOUNT.get(transaction.currency, 0)
         if transaction.amount < min_amount:
-            raise ValueError(f"Amount too small. Minimum: {min_amount}")
+            raise ValidationError(
+                message=f"Amount too small. Minimum: {min_amount}",
+                field="amount"
+            )
 
         return True
 
@@ -284,6 +290,7 @@ class PayGateAdapter(BaseAdapter):
             event_type="payment_" + payload["status"].lower(),
             provider=self.provider_name(),
             transaction_id=payload["identifier"],
+            status=self.get_normalize_status(payload.get("status", "")),
             amount=float(payload["amount"]),
             currency=Currency.XOF,  # PayGate works in XOF
             created_at=payload.get("datetime"),
