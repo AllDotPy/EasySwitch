@@ -137,11 +137,11 @@ class LogError(APIError):
 
 class ValidationError(EasySwitchError):
     """Validation error for request data."""
-    
-    def __init__(self, message: str, field: Optional[str] = None, **kwargs):
+
+    def __init__(self, message: str, field: Optional[str] = None, code: Optional[str] = None, **kwargs):
         self.field = field
         super().__init__(
-            message = message,
-            code = "validation_error",
-            details = {"field": field, **kwargs}
+            message=message,
+            code=code or "validation_error",
+            details={"field": field, **kwargs}
         )

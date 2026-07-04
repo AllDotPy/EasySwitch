@@ -78,9 +78,10 @@ def sanitize_logs(data: Dict[str, Any], sensitive_fields: Optional[list] = None)
         ]
     
     sanitized = {}
+    sensitive_lower = [f.lower() for f in sensitive_fields]
     
     for key, value in data.items():
-        if key.lower() in [f.lower() for f in sensitive_fields]:
+        if key.lower() in sensitive_lower:
             if isinstance(value, str) and value:
                 visible_chars = min(4, len(value) // 4)
                 sanitized[key] = value[:visible_chars] + "*" * (len(value) - visible_chars)

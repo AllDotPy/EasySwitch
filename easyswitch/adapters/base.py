@@ -5,7 +5,8 @@ import abc
 from typing import Any, ClassVar, Dict, List, Optional, Type
 
 from easyswitch.conf import ProviderConfig
-from easyswitch.exceptions import InvalidProviderError
+from easyswitch.exceptions import (InvalidProviderError,
+                                    ValidationError)
 from easyswitch.types import (Currency, PaymentResponse, TransactionDetail,
                               TransactionStatus, TransactionStatusResponse)
 from easyswitch.utils import USER_AGENT
@@ -385,12 +386,22 @@ class BaseAdapter(abc.ABC):
             bool: True if the transaction is valid, False otherwise
         """
 
-        # Validate the amount
+        # Validate the amount range
         validate_amount(
-            transaction.amount, 
-            self.MIN_AMOUNT[transaction.currency], 
-            # self.MAX_AMOUNT[transaction.currency]
+            transaction.amount,
+            self.MIN_AMOUNT.get(transaction.currency, 0),
         )
+
+        # Validate the maximum amount if configured
+        max_amount = self.MAX_AMOUNT.get(transaction.currency)
+        if max_amount is not None and transaction.amount > max_amount:
+            raise ValidationError(
+                message=(
+                    f"Amount {transaction.amount} exceeds maximum "
+                    f"of {max_amount} for {transaction.currency.value}"
+                ),
+                field="amount",
+            )
         
         # Validate the currency
         validate_currency(
