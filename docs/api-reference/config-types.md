@@ -1,84 +1,45 @@
-# Configuration Models (`easyswitch.conf.base`)
+# Configuration Models (`easyswitch.conf`)
 
-This module defines the **configuration system** for EasySwitch.
-It provides base classes, validation logic, and standardized structures to configure providers, logging, and root settings.
-
----
-
-## 🔹 Enumerations
-
-### `LogLevel`
-
-Defines the available **logging levels**.
-
-| Value      | Description                       |
-| ---------- | --------------------------------- |
-| `debug`    | Detailed debugging logs.          |
-| `info`     | General information logs.         |
-| `warning`  | Warnings that may need attention. |
-| `error`    | Errors that occurred.             |
-| `critical` | Critical errors, system failures. |
+This module defines the configuration system for EasySwitch. It provides Pydantic-based models with strict validation, and a `ConfigManager` that aggregates configuration from multiple sources.
 
 ---
 
-### `LogFormat`
+## RootConfig
 
-Defines the available **logging output formats**.
-
-| Value   | Description                     |
-| ------- | ------------------------------- |
-| `plain` | Standard human-readable logs.   |
-| `json`  | Structured logs in JSON format. |
-
----
-
-## 🔹 Models
-
-### `LoggingConfig`
-
-Configuration model for **application logging**.
+The **root configuration** for EasySwitch. Passed to the `EasySwitch` client.
 
 ```python
-class LoggingConfig(BaseModel):
-    enabled: bool = False
-    level: LogLevel = LogLevel.INFO
-    file: Optional[str] = None
-    console: bool = True
-    max_size: int = 10  # MB
-    backups: int = 5
-    compress: bool = True
-    format: LogFormat = LogFormat.PLAIN
-    rotate: bool = True
+class RootConfig(BaseConfigModel):
+    environment: str = "sandbox"                        # "sandbox" | "production"
+    timeout: int = 30                                   # Default timeout in seconds
+    debug: bool = False
+    logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    default_currency: str = "XOF"
+    providers: Dict[Provider, ProviderConfig] = Field(default_factory=dict)
+    default_provider: Optional[Provider] = None
 ```
 
 **Fields:**
 
-* `enabled` – Enable/disable logging (`False` by default).
-* `level` – Log level (`LogLevel` enum).
-* `file` – File path for logs (if any).
-* `console` – Print logs to console.
-* `max_size` – Maximum file size before rotation (MB).
-* `backups` – Number of backup log files to keep.
-* `compress` – Whether to compress rotated logs.
-* `format` – Log format (`plain` or `json`).
-* `rotate` – Enable log rotation.
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `environment` | `str` | `"sandbox"` | Global environment for all providers |
+| `timeout` | `int` | `30` | Default HTTP timeout (seconds) |
+| `debug` | `bool` | `False` | Enable debug logging |
+| `logging` | `LoggingConfig` | — | Logging configuration |
+| `default_currency` | `str` | `"XOF"` | Default currency for transactions |
+| `providers` | `Dict[Provider, ProviderConfig]` | `{}` | Enabled providers and their configs |
+| `default_provider` | `Optional[Provider]` | `None` | Provider used when none is specified |
+
+**Validations:**
+- `default_provider` (if set) must be present in `providers` and a valid `Provider` enum member
+- `default_currency` must be a valid `Currency` enum member
 
 ---
 
-### `BaseConfigModel`
+## ProviderConfig
 
-A **base class** for all configuration models.
-Provides extra validation rules via Pydantic.
-
-* Forbids extra/undefined fields.
-* Enforces enum values.
-* Validates all fields strictly.
-
----
-
-### `ProviderConfig`
-
-Defines configuration for a **payment provider**.
+Configuration for a **single payment provider**.
 
 ```python
 class ProviderConfig(BaseConfigModel):
@@ -88,100 +49,80 @@ class ProviderConfig(BaseConfigModel):
     base_url: Optional[str] = None
     callback_url: Optional[str] = None
     return_url: Optional[str] = None
-    timeout: int = 30
+    timeout: int = 30              # Overrides global timeout for this provider
     environment: str = "sandbox"   # "sandbox" | "production"
-    extra: Dict[str, Any] = {}
+    extra: Dict[str, Any] = {}     # Provider-specific settings
 ```
 
 **Validations:**
-
-* `environment` must be `"sandbox"` or `"production"`.
-* At least one of `api_key` or `api_secret` must be provided.
-
-**Fields:**
-
-* `api_key`, `api_secret`, `token` – Authentication credentials.
-* `base_url` – Provider API base URL.
-* `callback_url` – Callback URL for webhooks.
-* `return_url` – URL to redirect users after a transaction.
-* `timeout` – API request timeout (seconds).
-* `environment` – `"sandbox"` or `"production"`.
-* `extra` – Extra provider-specific settings.
+- `environment` must be `"sandbox"` or `"production"`
+- At least one of `api_key` or `api_secret` must be provided
 
 ---
 
-### `RootConfig`
-
-The **root configuration** for EasySwitch.
+## LoggingConfig
 
 ```python
-class RootConfig(BaseConfigModel):
-    debug: bool = False
-    logging: LoggingConfig = Field(default_factory=LoggingConfig)
-    default_currency: str = Currency.XOF
-    providers: Dict[Provider, ProviderConfig] = Field(default_factory=dict)
-    default_provider: Optional[Provider] = None
+class LoggingConfig(BaseModel):
+    enabled: bool = False
+    level: LogLevel = LogLevel.INFO
+    file: Optional[str] = None
+    console: bool = True
+    max_size: int = 10     # MB before rotation
+    backups: int = 5
+    compress: bool = True
+    format: LogFormat = LogFormat.PLAIN   # "plain" | "json"
+    rotate: bool = True
 ```
 
-**Fields:**
+---
 
-* `debug` – Enable debug mode if `True`.
-* `logging` – Logging configuration (`LoggingConfig`).
-* `default_currency` – Default currency (`Currency` enum).
-* `providers` – Dictionary of enabled providers (`ProviderConfig` per provider).
-* `default_provider` – Default provider (must exist in `providers`).
+## ConfigManager
 
-**Validations:**
+Loads and merges configuration from multiple sources, validates against `RootConfig`.
 
-* `default_provider` must be:
+```python
+manager = ConfigManager()
+manager.add_source('env', env_file=".env")
+manager.add_source('json', file_path="config.json")
+config = manager.load().get_config()   # Returns RootConfig
+```
 
-  * Included in the enabled `providers`.
-  * A valid supported provider (`Provider` enum).
-* `default_currency` must be a valid value in `Currency`.
+Client shortcuts:
+
+```python
+EasySwitch.from_env(".env")
+EasySwitch.from_json("config.json")
+EasySwitch.from_yaml("config.yaml")
+EasySwitch.from_dict({"providers": {...}})
+EasySwitch.from_multi_sources(env_file=".env", json_file="config.json")
+```
 
 ---
 
-### `BaseConfigSource`
+## Custom Configuration Sources
 
-An abstract base class (interface) for **configuration sources**.
-Any custom configuration loader (e.g., from environment, file, database) must implement it.
+Implement `BaseConfigSource` and register with `@register_source`:
 
 ```python
-class BaseConfigSource(ABC):
-    @abstractmethod
-    def load(self) -> Dict[str, Any]:
-        """Load configurations from the source."""
-        pass
+from easyswitch.conf import register_source, BaseConfigSource
 
-    @abstractmethod
+@register_source('toml')
+class TomlConfigSource(BaseConfigSource):
+    def __init__(self, path: str):
+        self.path = path
+
     def is_valid(self) -> bool:
-        """Check if the source is valid."""
-        pass
+        return Path(self.path).exists()
+
+    def load(self) -> Dict[str, Any]:
+        import toml
+        return toml.load(self.path)
 ```
 
----
-
-## ✅ Example Usage
+Then use it:
 
 ```python
-from easyswitch.conf.base import RootConfig, ProviderConfig, LoggingConfig, LogLevel, LogFormat
-from easyswitch.types import Provider, Currency
-
-config = RootConfig(
-    debug=True,
-    logging=LoggingConfig(
-        enabled=True,
-        level=LogLevel.DEBUG,
-        format=LogFormat.JSON
-    ),
-    default_currency=Currency.XOF,
-    providers={
-        Provider.SEMOA: ProviderConfig(
-            api_key="your-api-key",
-            api_secret="your-api-secret",
-            environment="sandbox"
-        )
-    },
-    default_provider=Provider.SEMOA
-)
+manager = ConfigManager()
+manager.add_source('toml', path="config.toml")
 ```

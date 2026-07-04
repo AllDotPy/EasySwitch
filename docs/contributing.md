@@ -1,178 +1,63 @@
-# 🚀 Contributing to EasySwitch
+# Contributing to EasySwitch
 
-Thank you for your interest in contributing to **EasySwitch**! This guide will help you contribute effectively while maintaining our quality standards.
+## Prerequisites
 
-<!-- ## 📋 Table of Contents
-- [Prerequisites](#-prerequisites)
-- [Local Setup](#-local-setup)
-- [Contribution Workflow](#-contribution-workflow)
-- [Code Conventions](#-code-conventions)
-- [Testing & Quality](#-testing--quality)
-- [Issue Management](#-issue-management)
-- [Code of Conduct](#-code-of-conduct) -->
+- Python 3.9+
+- `pip` (or `uv` for faster installs)
 
----
+## Local Setup
 
-## 🔍 Prerequisites
-- Python 3.10+
-- [UV](https://docs.astral.sh/uv/) (recommended) or pip
-- Basic knowledge of payment APIs
-- Familiarity with async testing
-
----
-
-## 💻 Local Setup
-
-### 1. Fork the Repository
-Click "Fork" at the top-right of the [project's GitHub page](https://github.com/AllDotPy/easyswitch).
-
-### 2. Clone the Project
 ```bash
-git clone https://github.com/your-username/easyswitch.git
-cd easyswitch
-```
-
-### 3. Set Up the Environment
-**With UV (recommended):**
-```bash
-# Install UV
-pip install uv
+git clone https://github.com/AllDotPy/EasySwitch.git
+cd EasySwitch
 
 # Create virtual environment
-uv venv
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Activate environment
-source venv/bin/activate  # Linux/Mac
-# OR
-.\venv\Scripts\activate   # Windows
-
-# Install dependencies
-uv pip install -e .
+# Install the package in editable mode with dev dependencies
+pip install -e ".[dev]"
 ```
 
-**With standard pip:**
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -e .
-```
+## Code Conventions
 
----
-
-## 🔄 Contribution Workflow
-
-1. **Create a Branch**  
-   ```bash
-   git checkout -b feat/new-feature
-   ```
-
-2. **Implement Your Changes**  
-   - Follow [code conventions](#-code-conventions)
-   - Add relevant tests
-
-3. **Verify Code Quality**  
-   ```bash
-   uv run lint   # Style check
-   uv run test   # Run tests
-   ```
-
-4. **Push Changes**  
-   ```bash
-   git push origin feat/new-feature
-   ```
-
-5. **Open a Pull Request**  
-   - Complete the PR template
-   - Clearly describe your changes
-   - Reference related issues
-
----
-
-## ✨ Code Conventions
-
-### General Structure
-- **Typing**: Use type annotations everywhere
-- **Async**: Prefer `async/await` for I/O operations
-- **Exceptions**: Use the project's custom exceptions
-
-### Style Guide
+- **Typing**: Use type annotations for all function signatures and public attributes
+- **Async**: Use `async/await` for all I/O-bound operations
 - **Naming**:
   - Variables/functions: `snake_case`
   - Classes: `PascalCase`
   - Constants: `UPPER_CASE`
-- **Docstrings**: Follow Google Style
-  ```python
-  def send_payment(amount: float) -> bool:
-      """Sends payment to the aggregator.
+- **Comments**: Write clear English comments explaining the *why*, not the *what*
+- **Imports**: Standard library → third-party → local (separated by blank lines)
 
-      Args:
-          amount: Amount to send (in XOF)
+## Testing
 
-      Returns:
-          bool: True if payment succeeded
-      """
-  ```
-
-### Validation
-- Use validators from `easyswitch.utils.validators`
-- Always validate API inputs
-
----
-
-## 🧪 Testing & Quality
-
-### Running Tests
 ```bash
-uv run test  # All tests
-uv run test -k "test_payment"  # Specific tests
+# Run all tests
+python -m pytest tests/
+
+# Run specific test file
+python -m pytest tests/test_paystack.py -v
+
+# Run with coverage
+python -m pytest tests/ --cov=easyswitch
 ```
 
-### Code Coverage
-```bash
-uv run coverage
-```
+Tests use `pytest-asyncio` for async adapter methods. All external APIs are mocked.
 
-### Best Practices
-- 1 test per feature
-- Isolated, idempotent tests
-- Mock external APIs
+## Adding a New Provider
 
----
+1. Create `easyswitch/integrators/<name>.py`
+2. Inherit from `BaseAdapter` and add `@AdaptersRegistry.register()`
+3. Implement all abstract methods (see [Base Adapter](api-reference/base-adapter.md))
+4. Add the provider to the `Provider` enum in `easyswitch/types.py`
+5. Write tests in `tests/test_<name>.py`
+6. Add documentation in `docs/integrations/<name>.md`
+7. Run tests: `python -m pytest tests/ -v`
 
-## 🐛 Issue Management
+## Pull Request Process
 
-### Reporting Bugs
-1. Check for existing issues
-2. Use the "Bug Report" template
-3. Include:
-   - Environment (Python, OS)
-   - Reproduction steps
-   - Relevant logs/errors
-
-### Feature Proposals
-1. Use the "Feature Request" template
-2. Describe:
-   - Use case
-   - Expected impact
-   - API sketch if applicable
-
----
-
-## 🤝 Code of Conduct
-
-We adhere to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating:
-- Be kind and open-minded
-- Accept constructive feedback
-- Prioritize collaboration
-
----
-
-## 🎉 First-Time Contributor?
-
-Check out these labeled issues:
-- `good first issue` for simple contributions
-- `help wanted` for more challenging tasks
-
----
-
-Thank you for helping make EasySwitch even better! 💪
+1. Create a branch from `main`
+2. Implement your changes with tests
+3. Run the full test suite and ensure all tests pass
+4. Open a PR with a clear description of the changes

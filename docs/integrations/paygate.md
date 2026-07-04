@@ -1,264 +1,214 @@
-# Under development
 # PayGate Integration with EasySwitch
 
 ## Overview
 
-As the leading integrator and pioneer of electronic payment solutions in Togo, PayGate Global enables e-merchants and Togolese organizations to accept mobile payments on both web and mobile platforms. Notably designed to reduce fraud and maximize revenue, PayGate offers a simple and secure solution for collecting online payments via mobile money.
+[PayGate Global](https://paygateglobal.com) is the leading mobile money payment gateway in Togo, supporting Mixx By Yas (FLOOZ) and Moov (TMONEY). It provides both direct API payments and hosted payment links. EasySwitch wraps PayGate's API behind a unified interface.
 
 ## Prerequisites
 
-By default, any newly created account on PayGate remains inactive until all required formalities are completed. To activate your account:
+- EasySwitch installed (see [Installation](../getting-started/installation.md))
+- A PayGate merchant account (requires business registration)
+- Your **API key** from the PayGate dashboard (available after account activation)
 
-- EasySwitch library is installed. For setup instructions, see [Installation](../getting-started/installation.md).
-- Go to your Profile page in the dashboard.
-- Submit the necessary documents:
-- Business registration certificate or tax ID
-- ID Card
-- Project description
-- Contact details
-- Callback URL (Add the callback_url in the dashboard and define it in your code)
+## Supported Features
 
-Once verified, your account will be activated and ready to use.
-After activation, your API key becomes available directly from your dashboard.
+| Feature | PayGate Support |
+|---------|----------------|
+| **Direct Payment** | ✅ via `direct_payment()` |
+| **Payment Link** | ✅ via `send_payment()` |
+| **Transaction Status** | ✅ via `check_status()` |
+| **Transaction Details** | ⚠️ Falls back to `check_status()` |
+| **Balance Check** | ✅ via `get_balance()` |
+| **Refunds** | ❌ Not supported (manual via dashboard) |
+| **Cancellation** | ❌ Not supported |
+| **Webhook Validation** | ⚠️ Field presence check (no HMAC) |
 
-## Supported Countries
+## Supported Currencies
 
-PayGate supports the following countries and payment methods:
+| Currency | Code | Min | Max |
+|----------|------|-----|-----|
+| CFA Franc (BCEAO) | `XOF` | 100.00 | 1,000,000 |
 
-| Country | Mobile Money Operators | Card Payments |
-|---------|----------------------|---------------|
-| **Togo** | Mixx By Yas, Moov | ✅ |
+## Supported Networks
+
+| Network | Country |
+|---------|---------|
+| **FLOOZ** (Mixx By Yas) | Togo |
+| **TMONEY** (Moov) | Togo |
 
 ## Setup
 
-### Basic Configuration
+### Minimal Configuration
 
 ```python
-from easyswitch import (
-    EasySwitch, 
-    TransactionDetail, 
-    Provider,
-    TransactionStatus, 
-    Currency, 
-    TransactionType, 
-    CustomerInfo
-)
+from easyswitch import EasySwitch, Provider
 
-# Prepare PayGate configuration
 config = {
-    "debug": True,
-    "default_provider": Provider.PAYGATE,
     "providers": {
         "PAYGATE": {
             "api_key": "your_paygate_api_key",
-            "callback_url": "your_paygate_callback_url",
-            "timeout": 60,  # timeout in seconds for HTTP requests
-            "environment": "production",    # Only Production mode for paygate
-        },
-    }
+            "callback_url": "https://your-site.com/webhook/paygate",
+            "environment": "production",      # PayGate does not have sandbox
+        }
+    },
+    "default_provider": "PAYGATE",
 }
-        
-#Initialize paygate client
-client = EasySwitch.from_dict(config_dict=config)
 
+client = EasySwitch.from_dict(config)
 ```
 
-### Alternative Configuration Methods
+### Environment Variables (.env)
 
-EasySwitch supports multiple configuration methods:
+```ini
+EASYSWITCH_ENABLED_PROVIDERS=paygate
+EASYSWITCH_DEFAULT_PROVIDER=paygate
+EASYSWITCH_PAYGATE_API_KEY=your_paygate_api_key
+EASYSWITCH_PAYGATE_CALLBACK_URL=https://your-site.com/webhook/paygate
+EASYSWITCH_PAYGATE_ENVIRONMENT=production
+```
 
 ```python
-# 1. From environment variables
 client = EasySwitch.from_env()
-
-# 2. From JSON file
-client = EasySwitch.from_json("config.json")
-
-# 3. From YAML file
-client = EasySwitch.from_yaml("config.yaml")
-
-# 4. From multiple sources (with overrides)
-client = EasySwitch.from_multi_sources(
-    env_file=".env",
-    json_file="overrides.json"
-)
 ```
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file or set the following environment variables:
-
-```bash
-# PayGate Configuration
-PAYGATE_API_KEY=sk_production_your_api_key_here
-PAYGATE_ENVIRONMENT=production
-PAYGATE_CALLBACK_URL=your_paygate_callback_url
-```
-
-### Authentication
-
-PayGate uses API key authentication. EasySwitch automaticaly set this for requests. 
-
-```python
-headers = {
-    'Authorization': f'Bearer {api_key}',
-    'Content-Type': 'application/json'
-}
-```
-
-> **Security Note**: Never expose your secret API key in client-side code. Always use environment variables or secure configuration management.
-
-## EasySwitch Methods
-
-EasySwitch provides a unified interface for all payment operations. Here are the main methods available:
-
-### Core Methods
-
-| Method | Description | Returns |
-|--------|-------------|---------|
-| `send_payment(transaction)` | Send a payment transaction | `PaymentResponse` |
-| `check_status(transaction_id, provider)` | Check transaction status | `TransactionStatus` |
-
-### Configuration Methods
-
-| Method | Description | Returns |
-|--------|-------------|---------|
-| `from_env(env_file)` | Initialize from environment variables | `EasySwitch` |
-| `from_json(json_file)` | Initialize from JSON file | `EasySwitch` |
-| `from_yaml(yaml_file)` | Initialize from YAML file | `EasySwitch` |
-| `from_dict(config_dict)` | Initialize from Python dictionary | `EasySwitch` |
-| `from_multi_sources(**sources)` | Initialize from multiple sources | `EasySwitch` |
 
 ## API Methods
 
-### 1. Create Payment
+### 1. Create Payment Link (send_payment)
 
-Initiate a payment transaction using EasySwitch's `TransactionDetail` class and `send_payment` method.
+Generate a payment URL that you redirect the customer to (hosted PayGate page):
 
 ```python
-# Create a TransactionDetail object
-transaction = TransactionDetail(
-    transaction_id="transaction1234",  # Unique ID generated by your system
-    provider=Provider.PAYGATE,
-    status = TransactionStatus.PENDING,
-    amount = 100,
-    currency=Currency.XOF,
-    transaction_type=TransactionType.PAYMENT,
-    customer=CustomerInfo(
-        firstname="John",
-        lastname="Doe",
-        email="john.doe@email.com",
-        phone_number="+22990123456"
-    ),
-    reason="Product XYZ Purchase"
+from easyswitch import (
+    TransactionDetail, Currency, TransactionStatus,
+    TransactionType, CustomerInfo
 )
 
-# Send payment using EasySwitch
+transaction = TransactionDetail(
+    transaction_id="order-20240704-001",
+    amount=5000.00,
+    currency=Currency.XOF,
+    customer=CustomerInfo(
+        phone_number="+22890123456",
+        first_name="John",
+        last_name="Doe",
+    ),
+    reason="Payment for order #1234",
+    callback_url="https://your-site.com/webhook/paygate",
+)
+
 response = client.send_payment(transaction)
 
-# Check response properties
-print(f"Local Transaction ID: {transaction.transaction_id}")  # Your internal ID
-print(f"FedaPay Transaction ID: {response.transaction_id}")   # ID generated by FedaPay
-print(f"Payment URL: {response.payment_link}")
+print(f"Payment link: {response.payment_link}")
+```
+
+### 2. Direct Payment (direct_payment)
+
+Process a payment directly via API (no hosted page):
+
+```python
+response = client.direct_payment(transaction)
+
+print(f"Transaction ID: {response.transaction_id}")
+print(f"Reference: {response.reference}")
 print(f"Status: {response.status}")
-print(f"Is Successful: {response.is_successful}")
-print(f"Is Pending: {response.is_pending}")
 ```
 
-**Response Object (PaymentResponse):**
+### 3. Check Transaction Status
+
 ```python
-PaymentResponse(
-  transaction_id='transaction1234', 
-  provider='PAYGATE', 
-  status=<TransactionStatus.PENDING: 'pending'>, 
-  amount=100, currency=<Currency.XOF: 'XOF'>, 
-  created_at=datetime.datetime(2025, 5, 15, 22, 16, 12, 279729), 
-  expires_at=None, reference='transaction1234', 
-  payment_link='payment_link', 
-  transaction_token=None, 
-  customer=CustomerInfo(phone_number='+22990123456', first_name='John', last_name='Doe', email='john.doe@email.com', address=None, city=None, country=None, postal_code=None, zip_code=None, state=None, id=None), 
-  raw_response={'payment_url': 'payment_link'}, metadata={})
+status_response = client.check_status("order-20240704-001")
+
+print(f"Status: {status_response.status}")
+print(f"Amount: {status_response.amount}")
+
+if status_response.status == TransactionStatus.SUCCESSFUL:
+    print("Payment completed!")
 ```
 
-⚠️ **Important Notes**
-
-- `transaction_id` in **EasySwitch** = your own internal identifier (must be unique in your system).  
-- `transaction_id` in the **PayGate response** = the ID generated by PayGate's platform.
-
----
-
-🔄 **ID Mapping Overview**
-
-| Context            | Field Name      | Who Generates It? | Purpose                                                      |
-|--------------------|-----------------|-------------------|--------------------------------------------------------------|
-| EasySwitch (your system) | `transaction_id` | You               | Internal reference to track the transaction in your own DB.   |
-| FedaPay            | `transaction_id` | FedaPay           | Unique identifier in FedaPay’s system (returned after init).  |
-
----
-
-✅ **Best Practice**
-
-- Always generate a unique `transaction_id` in your system.  
-- Store **both IDs** (your own + PayGate's) for reconciliation.
-
-### 2. Check Payment Status
-
-Retrieve the current status of a payment transaction using EasySwitch's `check_status` method.
+### 4. Check Balance
 
 ```python
-# Check transaction status
-transaction_id = "transaction1234"
-response = client.check_status(transaction_id)
-
-status = response.status
-print(f"Status value: {status}")
-
-# Check specific status types
-if status == TransactionStatus.SUCCESSFUL:
-    print("Payment completed successfully!")
-elif status == TransactionStatus.PENDING:
-    print("Payment is still processing...")
-elif status == TransactionStatus.FAILED:
-    print("Payment failed")
+balances = client.get_balance()
+print(f"FLOOZ balance: {balances['flooz']}")
+print(f"TMONEY balance: {balances['tmoney']}")
 ```
 
-**Response Object (TransactionStatusResponse):**
+## Webhook Management
+
+PayGate sends payment confirmation callbacks. EasySwitch validates that the required fields are present.
+
 ```python
-TransactionStatusResponse(
-    transaction_id="transaction1234",   # PayGate transaction ID (not your local one)
-    provider=Provider.PAYGATE,
-    status=TransactionStatus.PENDING,
-    amount=1000.0,
-    data={...}  # Raw PayGate's transaction data
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+client = EasySwitch.from_env()
+
+@app.route("/webhook/paygate", methods=["POST"])
+def paygate_webhook():
+    payload = request.get_json()
+    headers = dict(request.headers)
+
+    event = client.parse_webhook(
+        payload=payload,
+        headers=headers,
+    )
+
+    if event.status == TransactionStatus.SUCCESSFUL:
+        print(f"Payment {event.transaction_id} confirmed: {event.amount} XOF")
+        # Fulfill order…
+
+    return jsonify({"status": "ok"}), 200
+```
+
+### Status Mapping
+
+| PayGate Code | EasySwitch Status | Meaning |
+|-------------|-------------------|---------|
+| `0` | `SUCCESSFUL` | Payment successful |
+| `2` | `PENDING` | Invalid authentication token |
+| `4` | `EXPIRED` | Invalid parameters |
+| `6` | `CANCELLED` | Duplicate transaction detected |
+
+## Complete Example
+
+```python
+from easyswitch import (
+    EasySwitch, TransactionDetail, Currency,
+    TransactionStatus, CustomerInfo,
 )
+from easyswitch.exceptions import PaymentError
+
+client = EasySwitch.from_env()
+
+tx = TransactionDetail(
+    transaction_id="paygate-demo-001",
+    amount=2500.00,
+    currency=Currency.XOF,
+    customer=CustomerInfo(
+        phone_number="+22890123456",
+        first_name="Demo",
+        last_name="User",
+    ),
+    reason="Test payment via PayGate",
+)
+
+try:
+    # Generate payment link
+    response = client.send_payment(tx)
+    print(f"Payment link: {response.payment_link}")
+
+    # Later: verify status
+    status = client.check_status(tx.transaction_id)
+    print(f"Status: {status.status}")
+
+except PaymentError as e:
+    print(f"Error: {e}")
 ```
 
-**Available TransactionStatus Values:**
-```python
-class TransactionStatus(str, Enum):
-    PENDING = "pending"
-    SUCCESSFUL = "successful"
-    FAILED = "failed"
-    ERROR = "error"
-    CANCELLED = "cancelled"
-    REFUSED = "refused"
-    EXPIRED = "expired"
-    PROCESSING = "processing"
-    INITIATED = "initiated"
-    COMPLETED = "completed"
-```
+## Limitations
 
-### 3. PayGate Limitations
-
-> **Important**: PayGate does not support refunds or transaction cancellation through their API. These operations must be handled manually through the PayGate dashboard or by contacting their support team.
-
-#### Unsupported Operations
-
-| Operation | PayGate Support | Alternative |
-|-----------|----------------|-------------|
-| **Refunds** | ❌ Not supported | Manual processing via dashboard |
-| **Transaction Cancellation** | ❌ Not supported | Contact PayGate support |
-| **Partial Refunds** | ❌ Not supported | Manual processing via dashboard |
-
+- **No sandbox**: PayGate does not provide a testing environment.
+- **No refunds**: Refunds must be processed manually via the PayGate dashboard.
+- **No cancellation**: Transactions cannot be cancelled via API.
+- **Togo only**: PayGate only supports Togolese mobile money operators (FLOOZ, TMONEY).
+- **XOF only**: Only CFA Franc is supported.
