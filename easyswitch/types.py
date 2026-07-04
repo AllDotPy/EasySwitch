@@ -25,7 +25,7 @@ class Provider(str, Enum):
     AIRTEL_MONEY = 'AIRTEL_MONEY'
     QOSPAY = 'QOSPAY'
     PAYPLUS = 'PAYPLUS'
-    KKIA_PAY = 'KKIA_PAY'
+    KKIAPAY = 'KKIAPAY'
     PAYDUNYA = 'PAYDUNYA'
 
 
