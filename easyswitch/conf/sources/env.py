@@ -32,14 +32,14 @@ class EnvConfigSource(BaseConfigSource):
             'environment': os.getenv('EASYSWITCH_ENVIRONMENT', 'sandbox').lower(),
             'timeout': self._parse_int('EASYSWITCH_TIMEOUT', 30),
             'debug': self._parse_bool('EASYSWITCH_DEBUG', False),
-            'currency': os.getenv('EASYSWITCH_DEFAULT_CURRENCY', 'XOF'),
+            'default_currency': os.getenv('EASYSWITCH_DEFAULT_CURRENCY', 'XOF'),
             'logging': self._load_logging_config(),
             'providers': self._load_providers_config()
         }
         
         # Set default provider if specified
         if default_provider := os.getenv('EASYSWITCH_DEFAULT_PROVIDER'):
-            config['default_provider'] = default_provider.lower()
+            config['default_provider'] = default_provider.upper()
         
         return config
     
@@ -69,7 +69,7 @@ class EnvConfigSource(BaseConfigSource):
         for provider in enabled_providers:
             provider_key = provider.upper()
             prefix = f"EASYSWITCH_{provider_key}_"
-            extra_attrs_prefix = f"{prefix}_X_"
+            extra_attrs_prefix = f"{prefix}X_"
             
             # Collect all variables for this provider
             provider_vars = {}
@@ -86,7 +86,7 @@ class EnvConfigSource(BaseConfigSource):
                         provider_vars[config_key] = self._parse_value(value)
             
             if provider_vars:
-                providers_config[provider] = provider_vars
+                providers_config[provider_key] = provider_vars
         
         return providers_config
 

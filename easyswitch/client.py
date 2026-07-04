@@ -149,19 +149,19 @@ class EasySwitch:
 
         # Add .env source if exists
         if env_file:
-            manager.add_source('env', env_file)
+            manager.add_source('env', env_file=env_file)
 
         # Add json file source if exists
         if json_file:
-            manager.add_source('json', json_file)
+            manager.add_source('json', file_path=json_file)
         
         # Add yaml file source if exists
         if yaml_file:
-            manager.add_source('yaml', yaml_file)
+            manager.add_source('yaml', file_path=yaml_file)
         
         # And dict source too
         if config_dict:
-            manager.add_source('dict', config_dict)
+            manager.add_source('dict', config_dict=config_dict)
 
         return cls(manager.load(**kwargs).get_config())
 
