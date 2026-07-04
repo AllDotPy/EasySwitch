@@ -10,12 +10,14 @@ class EasySwitchError(Exception):
     def __init__(
         self, message: str, 
         code: Optional[str] = None, 
-        details: Optional[Dict[str, Any]] = None
+        details: Optional[Dict[str, Any]] = None,
+        **kwargs
     ):
 
         self.message = message
         self.code = code
         self.details = details or {}
+        self.extra = kwargs
         super().__init__(self.message)
 
 
@@ -87,7 +89,10 @@ class RateLimitError(APIError):
 
 class UnsupportedOperationError(EasySwitchError):
     """Unsupported operation error."""
-    pass
+
+    def __init__(self, message: str, provider: Optional[str] = None, **kwargs):
+        self.provider = provider
+        super().__init__(message=message, **kwargs)
 
 
 class PaymentError(APIError):
